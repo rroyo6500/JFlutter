@@ -1,4 +1,4 @@
-package rroyo.JF.JFComponents.Components;
+package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.JFComponent;
@@ -9,6 +9,11 @@ public class JFCenter extends JFComponent {
 
     public JFCenter() {
         super();
+    }
+
+    public JFCenter(@NotNull JFComponent child) {
+        super();
+        addChild(child);
     }
 
     @Override
