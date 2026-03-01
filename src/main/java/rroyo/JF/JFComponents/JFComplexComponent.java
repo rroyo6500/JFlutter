@@ -1,5 +1,7 @@
 package rroyo.JF.JFComponents;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.awt.*;
 
 public abstract class JFComplexComponent extends JFComponent{
@@ -11,12 +13,23 @@ public abstract class JFComplexComponent extends JFComponent{
     }
 
     @Override
-    public void layoutRecalculate() {
-        component.layout();
+    public void init(@NotNull JFComponent parent) {
+        super.init(parent);
+        if (this.component != null) {
+            this.component.init(parent);
+            int indexComplexComponent = parent.childList.indexOf(this);
+            parent.childList.set(indexComplexComponent, this.component);
+        }
     }
 
     @Override
     public void design(Graphics g) {
-        component.draw(g);
-    };
+
+    }
+
+    @Override
+    public void layoutRecalculate() {
+
+    }
+
 }
