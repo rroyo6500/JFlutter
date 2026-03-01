@@ -67,6 +67,8 @@ public class JFColumn extends JFComponent {
 
     public JFColumn addChilds(@NotNull JFComponent... children) {
         for (JFComponent child : children) {
+            if (child.getClass() == JFCenter.class)
+                throw new RuntimeException("JFCenter cannot be added directly to a JFColumn");
             addChild(child);
         }
         return this;
@@ -83,7 +85,7 @@ public class JFColumn extends JFComponent {
         }
 
         int finalHeight = (parent != null && parent.componentBox.height > 0)
-                ? parent.componentBox.height : totalChildrenHeight;
+                ? parent.componentBox.height : componentBox.height > 0 ? componentBox.height : totalChildrenHeight;
 
         setSizeInternal(maxChildWidth, finalHeight);
 

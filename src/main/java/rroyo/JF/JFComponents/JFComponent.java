@@ -186,15 +186,8 @@ public abstract class JFComponent {
 
 
     public JFComponent setSize(int width, int height) {
-        if (parent != null) {
-            if (width > parent.componentBox.width || height > parent.componentBox.height) {
-                throw new RuntimeException("The size of the component cannot be greater than the parent's size.");
-            }
-        }
-
         componentBox.setSize(width, height);
         updateAbsolutePositionFromLocal();
-        validateWithinParent();
         invalidateLayout();
         return this;
     }

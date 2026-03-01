@@ -13,6 +13,7 @@ public class JFWindow extends JFComponent {
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
+
             JFWindow.this.layout();
             JFWindow.this.validateTree();
             JFWindow.this.draw(g);

@@ -67,6 +67,8 @@ public class JFRow extends JFComponent {
 
     public JFRow addChilds(@NotNull JFComponent... children) {
         for (JFComponent child : children) {
+            if (child.getClass() == JFCenter.class)
+                throw new RuntimeException("JFCenter cannot be added directly to a JFRow");
             addChild(child);
         }
         return this;
@@ -83,7 +85,7 @@ public class JFRow extends JFComponent {
         }
 
         int finalWidth = (parent != null && parent.componentBox.width > 0)
-                ? parent.componentBox.width : totalChildrenWidth;
+                ? parent.componentBox.width : componentBox.width > 0 ? componentBox.width : totalChildrenWidth;
 
         setSizeInternal(finalWidth, maxChildHeight);
 
