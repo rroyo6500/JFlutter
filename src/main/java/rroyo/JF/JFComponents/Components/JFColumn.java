@@ -82,12 +82,10 @@ public class JFColumn extends JFComponent {
             maxChildWidth = Math.max(maxChildWidth, child.componentBox.width);
         }
 
-        int finalWidth = (parent != null && parent.componentBox.width > 0)
-                ? parent.componentBox.width : maxChildWidth;
         int finalHeight = (parent != null && parent.componentBox.height > 0)
                 ? parent.componentBox.height : totalChildrenHeight;
 
-        setSizeInternal(finalWidth, finalHeight);
+        setSizeInternal(maxChildWidth, finalHeight);
 
         int remainingSpace = componentBox.height - totalChildrenHeight;
         int childCount = childList.size();
