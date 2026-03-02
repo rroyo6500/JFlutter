@@ -8,8 +8,9 @@ import java.awt.*;
 
 public class JFWindow extends JFComponent {
 
-    JFrame window = new JFrame();
-    JPanel panel = new JPanel(){
+    private Color color = Color.WHITE;
+
+    public final JPanel panel = new JPanel(){
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -23,6 +24,7 @@ public class JFWindow extends JFComponent {
     public JFWindow(int width, int height) {
         super();
 
+        JFrame window = new JFrame();
         window.setSize(width, height);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLocationRelativeTo(null);
@@ -41,6 +43,11 @@ public class JFWindow extends JFComponent {
 
     }
 
+    public JFWindow setColor(Color color) {
+        this.color = color;
+        return this;
+    }
+
     @Override
     public JFWindow addChild(@NotNull JFComponent child) {
         this.childList.clear();
@@ -55,6 +62,7 @@ public class JFWindow extends JFComponent {
 
     @Override
     public void design(Graphics g) {
-
+        g.setColor(color);
+        g.fillRect(0, 0, componentBox.width, componentBox.height);
     }
 }

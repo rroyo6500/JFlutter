@@ -14,7 +14,6 @@ public abstract class JFComplexComponent extends JFComponent{
 
     @Override
     public void init(@NotNull JFComponent parent) {
-        super.init(parent);
         if (this.component != null) {
             this.component.init(parent);
             int indexComplexComponent = parent.childList.indexOf(this);
