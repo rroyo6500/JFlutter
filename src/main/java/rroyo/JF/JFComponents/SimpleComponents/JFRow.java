@@ -89,6 +89,8 @@ public class JFRow extends JFComponent {
 
         setSizeInternal(finalWidth, maxChildHeight);
 
+        // getLastComponent(JFContainer.class, JFSizeBox.class).componentBox.width
+
         int remainingSpace = componentBox.width - totalChildrenWidth;
         int childCount = childList.size();
 

@@ -10,7 +10,13 @@ public class Main {
 
         JFWindow window = new JFWindow(800, 800);
 
-        window.addChild(new JFText("Hello World!"));
+        window.addChild(
+                new JFColumn().addChilds(
+                        new JFRow().addChilds(
+                                new JFText("Hello World")
+                        )
+                )
+        );
 
     }
 

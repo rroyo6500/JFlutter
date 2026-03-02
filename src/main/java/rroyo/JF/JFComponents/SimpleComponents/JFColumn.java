@@ -89,6 +89,8 @@ public class JFColumn extends JFComponent {
 
         setSizeInternal(maxChildWidth, finalHeight);
 
+        // getLastComponent(JFContainer.class, JFSizeBox.class).componentBox.height
+
         int remainingSpace = componentBox.height - totalChildrenHeight;
         int childCount = childList.size();
 

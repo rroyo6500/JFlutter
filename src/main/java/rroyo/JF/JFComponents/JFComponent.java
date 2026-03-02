@@ -308,4 +308,32 @@ public abstract class JFComponent {
      */
     public abstract void design(Graphics g);
 
+    @SafeVarargs
+    public final JFComponent getLastComponent(Class<? extends JFComponent>... clazz) {
+        JFComponent last = null;
+        int deep = 0;
+        for (Class<? extends JFComponent> c : clazz) {
+            JFComponent l = this;
+            int d = 0;
+            while (l.getClass() != c) {
+                System.out.println("tmpLast: " + l.getClass());
+                System.out.println("Class: " + c);
+                if (l.parent == null) break;
+                System.out.println("Parent: " + l.parent.getClass());
+                l = l.parent;
+                d++;
+            }
+            if (deep == 0) {
+                deep = d;
+                last = l;
+            }
+            if (d < deep) {
+                deep = d;
+                last = l;
+            }
+        }
+        System.out.println("Last: " + last.getClass());
+        return last;
+    }
+
 }
