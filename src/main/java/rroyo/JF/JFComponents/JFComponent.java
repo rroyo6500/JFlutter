@@ -39,7 +39,7 @@ public abstract class JFComponent {
      * - Enables nested rendering and event delegation by organizing components within a tree structure.
      * - May be used to iterate and manage grouped behaviors, such as layout adjustments or graphical updates.
      */
-    public final List<JFComponent> childList = new ArrayList<>();
+    protected final List<JFComponent> childList = new ArrayList<>();
 
     /**
      * Represents the geometric boundary of the component.
@@ -59,6 +59,8 @@ public abstract class JFComponent {
     public Rectangle componentBox = new Rectangle(0, 0, 0, 0);
 
     private boolean layoutDirty = true;
+
+    protected boolean layoutRequireChild = false;
 
     /**
      * Represents the horizontal local position of this component relative to its parent.
@@ -111,6 +113,10 @@ public abstract class JFComponent {
      */
     public JFComponent() {}
 
+    protected JFComponent(boolean layoutRequireChild) {
+        this.layoutRequireChild = layoutRequireChild;
+    }
+
     /**
      * Initializes the component with the specified parent component.
      * This method sets the parent of the current component, adjusts
@@ -121,7 +127,7 @@ public abstract class JFComponent {
      * @param parent the parent component to which this component will belong. Must not be null.
      * @throws IllegalStateException if the component's size or position exceeds the parent's bounds.
      */
-    public void init(@NotNull JFComponent parent) {
+    protected void init(@NotNull JFComponent parent) {
         this.parent = parent;
         invalidateLayout();
     }
@@ -187,7 +193,6 @@ public abstract class JFComponent {
 
     public JFComponent setSize(int width, int height) {
         componentBox.setSize(width, height);
-        updateAbsolutePositionFromLocal();
         invalidateLayout();
         return this;
     }
@@ -204,37 +209,9 @@ public abstract class JFComponent {
         this.localX = x;
         this.localY = y;
 
-        // If parent is not known yet, we keep componentBox.x/y as the local coords for now.
-        // Once attached (init), we convert to absolute.
-        if (parent == null) {
-            componentBox.setLocation(localX, localY);
-            return this;
-        }
-
         updateAbsolutePositionFromLocal();
-        validateWithinParent();
         invalidateLayout();
         return this;
-    }
-
-    public JFComponent setX(int x) {
-        return setPosition(x, this.localY);
-    }
-
-    public JFComponent setY(int y) {
-        return setPosition(this.localX, y);
-    }
-
-    public JFComponent setBounds(int x, int y, int width, int height) {
-        setPosition(x, y);
-        setSize(width, height);
-        return this;
-    }
-
-    public void setLocalPositionInternal(int x, int y) {
-        this.localX = x;
-        this.localY = y;
-        updateAbsolutePositionFromLocal();
     }
 
     /**
@@ -243,44 +220,76 @@ public abstract class JFComponent {
      * and is added to the internal list of children.
      *
      * @param child the child component to be added. Must not be null.
-     * @return the current component instance, allowing for method chaining.
      */
     public JFComponent addChild(@NotNull JFComponent child) {
-
         childList.add(child);
         child.init(this);
-
         invalidateLayout();
-
         return this;
     }
 
-    protected void invalidateLayout() {
+    protected final void invalidateLayout() {
         layoutDirty = true;
 
         if (parent != null)
             parent.invalidateLayout();
     }
 
-    public final void layout() {
+    protected final void layout() {
 
         if (!layoutDirty) return;
+
+        if (layoutRequireChild)
+            for (JFComponent child : childList)
+                child.layout();
+
+        layoutRecalculate();
 
         for (JFComponent child : childList)
             child.layout();
 
-        layoutRecalculate();
-
         layoutDirty = false;
     }
 
-    public abstract void layoutRecalculate();
+    protected abstract void layoutRecalculate();
 
-    public final void validateTree() {
+    protected final void validateTree() {
         validateWithinParent();
 
         for (JFComponent child : childList)
             child.validateTree();
+    }
+
+    /**
+     * Search in the tree any componeng with the given class.
+     *
+     * @return Any component of the upperTree with the given class.
+     */
+    @SafeVarargs
+    protected final JFComponent getComponentFromTree(Class<? extends JFComponent>... componentClass){
+        JFComponent retComponent = null;
+        int deep = 0;
+
+        for (Class<? extends JFComponent> c : componentClass) {
+            JFComponent comp = this.parent;
+            int d = 0;
+
+            while (comp.getClass() != c && comp.parent != null) {
+                comp = comp.parent;
+                d++;
+            }
+
+            if (retComponent == null) {
+                retComponent = comp;
+                deep = d;
+            } else if (deep > d) {
+                retComponent = comp;
+                deep = d;
+            }
+
+        }
+
+        return retComponent;
     }
 
     /**
@@ -293,7 +302,7 @@ public abstract class JFComponent {
      * Subclasses must override the {@code design} method to define the component's
      * appearance, as this method relies on the {@code design} implementation.
      */
-    public void draw(Graphics g) {
+    protected void draw(Graphics g) {
         design(g);
 
         for (JFComponent child : childList) {
@@ -306,34 +315,6 @@ public abstract class JFComponent {
      * This method is called to paint the component on the screen or its graphical context.
      * Each subclass must provide an implementation to define how the component should appear.
      */
-    public abstract void design(Graphics g);
-
-    @SafeVarargs
-    public final JFComponent getLastComponent(Class<? extends JFComponent>... clazz) {
-        JFComponent last = null;
-        int deep = 0;
-        for (Class<? extends JFComponent> c : clazz) {
-            JFComponent l = this;
-            int d = 0;
-            while (l.getClass() != c) {
-                System.out.println("tmpLast: " + l.getClass());
-                System.out.println("Class: " + c);
-                if (l.parent == null) break;
-                System.out.println("Parent: " + l.parent.getClass());
-                l = l.parent;
-                d++;
-            }
-            if (deep == 0) {
-                deep = d;
-                last = l;
-            }
-            if (d < deep) {
-                deep = d;
-                last = l;
-            }
-        }
-        System.out.println("Last: " + last.getClass());
-        return last;
-    }
+    protected abstract void design(Graphics g);
 
 }

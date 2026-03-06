@@ -1,16 +1,22 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
 
 public class JFContainer extends JFComponent {
 
-    public Color color;
+    private Color color;
 
-    public JFContainer() {
-        super();
+    public JFContainer(int width, int height, @Nullable Color color) {
+        setSize(width, height);
+        this.color = color;
+    }
+
+    public JFContainer(int width, int height) {
+        this(width, height, null);
     }
 
     public JFContainer setColor(Color color) {
@@ -19,41 +25,28 @@ public class JFContainer extends JFComponent {
     }
 
     @Override
-    public JFContainer setSize(int width, int height) {
-        super.setSize(width, height);
-        return this;
-    }
-
-    @Override
-    public JFContainer setWidth(int width) {
-        super.setWidth(width);
-        return this;
-    }
-
-    @Override
-    public JFContainer setHeight(int height) {
-        super.setHeight(height);
-        return this;
-    }
-
-    @Override
-    public JFContainer addChild(@NotNull JFComponent child) {
-        this.childList.clear();
+    public JFComponent addChild(@NotNull JFComponent child) {
+        childList.clear();
         super.addChild(child);
         return this;
     }
 
     @Override
-    public void layoutRecalculate() {
+    protected void layoutRecalculate() {
 
     }
 
     @Override
-    public void design(Graphics g) {
-        if (color == null) return;
+    protected void design(Graphics g) {
+        if (color == null) {
+            System.err.printf(
+                    "Warning: Component [JFContainer(%d, %d, null)] can be replaced by 'JFSizedBox'%n",
+                    componentBox.width, componentBox.height
+            );
+            return;
+        }
 
         g.setColor(color);
         g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
-
     }
 }

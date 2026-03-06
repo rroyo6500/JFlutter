@@ -10,7 +10,7 @@ public class JFWindow extends JFComponent {
 
     private Color color = Color.WHITE;
 
-    public final JPanel panel = new JPanel(){
+    protected final JPanel panel = new JPanel(){
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -43,25 +43,29 @@ public class JFWindow extends JFComponent {
 
     }
 
+    public void repaint() {
+        panel.repaint();
+    }
+
     public JFWindow setColor(Color color) {
         this.color = color;
         return this;
     }
 
     @Override
-    public JFWindow addChild(@NotNull JFComponent child) {
+    public JFComponent addChild(@NotNull JFComponent child) {
         this.childList.clear();
         super.addChild(child);
         return this;
     }
 
     @Override
-    public void layoutRecalculate() {
+    protected void layoutRecalculate() {
 
     }
 
     @Override
-    public void design(Graphics g) {
+    protected void design(Graphics g) {
         g.setColor(color);
         g.fillRect(0, 0, componentBox.width, componentBox.height);
     }

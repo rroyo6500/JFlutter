@@ -7,7 +7,8 @@ import java.awt.*;
 
 public class JFRow extends JFComponent {
 
-    public enum MainAxisAlignment {
+    public enum mainAxisAlignment {
+        DEFAULT,
         START,
         CENTER,
         END,
@@ -15,67 +16,47 @@ public class JFRow extends JFComponent {
         SPACE_AROUND,
         SPACE_EVENLY
     }
-    public enum CrossAxisAlignment {
+    public enum crossAxisAlignment {
+        DEFAULT,
         START,
         CENTER,
         END
     }
 
-    public MainAxisAlignment maa = MainAxisAlignment.START;
-    public CrossAxisAlignment caa = CrossAxisAlignment.START;
+    public mainAxisAlignment maa = mainAxisAlignment.DEFAULT;
+    public crossAxisAlignment caa = crossAxisAlignment.DEFAULT;
 
+    public JFRow(@NotNull JFComponent... children) {
+        super(true);
+        addChilds(children);
+    }
     public JFRow() {
-        super();
+        super(true);
     }
 
-    public JFRow mainAxisAlingment(MainAxisAlignment maa) {
+    public JFRow mainAxisAlignment(mainAxisAlignment maa) {
         this.maa = maa;
         return this;
     }
-    public JFRow crossAxisAlingment(CrossAxisAlignment caa) {
+    public JFRow crossAxisAlignment(crossAxisAlignment caa) {
         this.caa = caa;
-        return this;
-    }
-
-    @Override
-    public JFRow setSize(int width, int height) {
-        super.setSize(width, height);
-        return this;
-    }
-
-    @Override
-    public JFRow setWidth(int width) {
-        super.setWidth(width);
-        return this;
-    }
-
-    @Override
-    public JFRow setHeight(int height) {
-        super.setHeight(height);
-        return this;
-    }
-
-    protected void setSizeInternal(int w, int h) {
-        componentBox.setSize(w, h);
-    }
-
-    @Override
-    public JFRow addChild(@NotNull JFComponent child) {
-        super.addChild(child);
         return this;
     }
 
     public JFRow addChilds(@NotNull JFComponent... children) {
         for (JFComponent child : children) {
+
             if (child.getClass() == JFCenter.class)
-                throw new RuntimeException("JFCenter cannot be added directly to a JFRow");
-            addChild(child);
+                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a Row");
+
+            super.addChild(child);
         }
         return this;
     }
 
     @Override
-    public void layoutRecalculate() {
+    protected void layoutRecalculate() {
+
         int totalChildrenWidth = 0;
         int maxChildHeight = 0;
 
@@ -84,54 +65,24 @@ public class JFRow extends JFComponent {
             maxChildHeight = Math.max(maxChildHeight, child.componentBox.height);
         }
 
-        int finalWidth = (parent != null && parent.componentBox.width > 0)
-                ? parent.componentBox.width : componentBox.width > 0 ? componentBox.width : totalChildrenWidth;
-
-        setSizeInternal(finalWidth, maxChildHeight);
-
-        // getLastComponent(JFContainer.class, JFSizeBox.class).componentBox.width
-
-        int remainingSpace = componentBox.width - totalChildrenWidth;
-        int childCount = childList.size();
-
-        float currentX = 0;
-        float gap = 0;
-
-        if (childCount > 0) {
-            switch (maa) {
-                case START -> { currentX = 0; gap = 0; }
-                case CENTER -> { currentX = remainingSpace / 2f; gap = 0; }
-                case END -> { currentX = remainingSpace; gap = 0; }
-
-                case SPACE_BETWEEN -> {
-                    currentX = 0;
-                    gap = (childCount > 1) ? (float)remainingSpace / (childCount - 1) : 0;
-                }
-                case SPACE_AROUND -> {
-                    gap = (float)remainingSpace / childCount;
-                    currentX = gap / 2f;
-                }
-                case SPACE_EVENLY -> {
-                    gap = (float)remainingSpace / (childCount + 1);
-                    currentX = gap;
-                }
-            }
+        int finalWidth = 0;
+        if (parent != null) {
+            finalWidth = (parent.componentBox.width > 0)
+                    ? parent.componentBox.width
+                    : (parent.getClass() == JFCenter.class)
+                        ? getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.width
+                        : (parent.getClass() == JFRow.class)
+                            ? totalChildrenWidth
+                            : 0//
+            ;
         }
 
-        for (JFComponent child : childList) {
-            int childY = switch (caa) {
-                case CENTER -> (componentBox.height - child.componentBox.height) / 2;
-                case END -> componentBox.height - child.componentBox.height;
-                default -> 0;
-            };
 
-            child.setLocalPositionInternal((int)currentX, childY);
-            currentX += child.componentBox.width + gap;
-        }
+
     }
 
     @Override
-    public void design(Graphics g) {
+    protected void design(Graphics g) {
 
     }
 }
