@@ -11,11 +11,7 @@ public class Main {
 
         JFWindow window = new JFWindow(800, 800);
 
-        window.addChild(
-                new JFCenter(
-                        new JFContainer(100, 100, Color.red)
-                )
-        );
+
 
     }
 

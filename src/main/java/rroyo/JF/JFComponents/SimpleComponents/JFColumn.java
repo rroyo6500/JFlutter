@@ -47,7 +47,7 @@ public class JFColumn extends JFComponent {
         for (JFComponent child : children) {
 
             if (child.getClass() == JFCenter.class)
-                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a Row");
+                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a Column");
 
             super.addChild(child);
         }
@@ -57,26 +57,71 @@ public class JFColumn extends JFComponent {
     @Override
     protected void layoutRecalculate() {
 
-        int totalChildrenWidth = 0;
-        int maxChildHeight = 0;
+        int totalChildrenHeight = 0;
+        int maxChildWidth = 0;
 
         for (JFComponent child : childList) {
-            totalChildrenWidth += child.componentBox.width;
-            maxChildHeight = Math.max(maxChildHeight, child.componentBox.height);
+            totalChildrenHeight += child.componentBox.height;
+            maxChildWidth = Math.max(maxChildWidth, child.componentBox.width);
         }
 
-        int finalWidth = (parent != null && parent.componentBox.width > 0)
-                ? parent.componentBox.width
-                : componentBox.width > 0
-                ? componentBox.width
-                : totalChildrenWidth;
+        int finalHeight = totalChildrenHeight;
+        if (parent != null) {
+            finalHeight = (parent.componentBox.height > 0)
+                    ? parent.componentBox.height
+                    : (parent.getClass() == JFCenter.class)
+                        ? getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.height
+                        : totalChildrenHeight
+            ;
+        }
 
+        setSize(maxChildWidth, finalHeight);
 
+        int remainingSpace = componentBox.height - totalChildrenHeight;
+        int childCount = childList.size();
+
+        float currentY = 0;
+        float gap = 0;
+
+        if (childCount > 0) {
+            switch (maa) {
+                case START, DEFAULT -> { currentY = 0; gap = 0; }
+                case CENTER -> { currentY = remainingSpace / 2f; gap = 0; }
+                case END -> { currentY = remainingSpace; gap = 0; }
+
+                case SPACE_BETWEEN -> {
+                    currentY = 0;
+                    gap = (childCount > 1) ? (float)remainingSpace / (childCount - 1) : 0;
+                }
+                case SPACE_AROUND -> {
+                    gap = (float)remainingSpace / childCount;
+                    currentY = gap / 2f;
+                }
+                case SPACE_EVENLY -> {
+                    gap = (float)remainingSpace / (childCount + 1);
+                    currentY = gap;
+                }
+            }
+        }
+
+        for (JFComponent child : childList) {
+            int childX = switch (caa) {
+                case CENTER -> (componentBox.width - child.componentBox.width) / 2;
+                case END -> componentBox.width - child.componentBox.width;
+                default -> 0;
+            };
+
+            child.setPosition(childX, (int) currentY);
+            currentY += child.componentBox.height + gap;
+        }
 
     }
 
     @Override
     protected void design(Graphics g) {
-
+        /*
+        g.setColor(Color.gray);
+        g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
+        // */
     }
 }

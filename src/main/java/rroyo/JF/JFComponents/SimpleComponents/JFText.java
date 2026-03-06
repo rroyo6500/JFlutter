@@ -48,8 +48,10 @@ public class JFText extends JFComponent {
 
     @Override
     protected void design(Graphics g) {
-        g.setColor(backgroundColor);
-        g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
+        if (backgroundColor != null) {
+            g.setColor(backgroundColor);
+            g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
+        }
 
         g.setColor(color);
         g.setFont(font);

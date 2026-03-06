@@ -15,8 +15,7 @@ public class JFCenter extends JFComponent {
     @Override
     public JFComponent addChild(@NotNull JFComponent child) {
         childList.clear();
-        super.addChild(child);
-        return this;
+        return super.addChild(child);
     }
 
     @Override
@@ -34,11 +33,19 @@ public class JFCenter extends JFComponent {
         child.setPosition(childX, childY);
 
         if (child.getClass() == JFRow.class) {
-            ((JFRow) child).mainAxisAlignment(JFRow.mainAxisAlignment.CENTER);
-            ((JFRow) child).crossAxisAlignment(JFRow.crossAxisAlignment.CENTER);
+            JFRow row = (JFRow) child;
+
+            if (row.maa == JFRow.mainAxisAlignment.DEFAULT)
+                row.mainAxisAlignment(JFRow.mainAxisAlignment.CENTER);
+            if (row.caa == JFRow.crossAxisAlignment.DEFAULT)
+                row.crossAxisAlignment(JFRow.crossAxisAlignment.CENTER);
         } else if (child.getClass() == JFColumn.class) {
-            ((JFColumn) child).mainAxisAlignment(JFColumn.mainAxisAlignment.CENTER);
-            ((JFColumn) child).crossAxisAlignment(JFColumn.crossAxisAlignment.CENTER);
+            JFColumn column = (JFColumn) child;
+
+            if (column.maa == JFColumn.mainAxisAlignment.DEFAULT)
+                column.mainAxisAlignment(JFColumn.mainAxisAlignment.CENTER);
+            if (column.caa == JFColumn.crossAxisAlignment.DEFAULT)
+                column.crossAxisAlignment(JFColumn.crossAxisAlignment.CENTER);
         }
 
     }
