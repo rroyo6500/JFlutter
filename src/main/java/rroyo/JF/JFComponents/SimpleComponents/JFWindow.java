@@ -9,6 +9,7 @@ import java.awt.*;
 public class JFWindow extends JFComponent {
 
     private Color color = Color.WHITE;
+    private final JFrame window;
 
     protected final JPanel panel = new JPanel(){
         @Override
@@ -24,14 +25,13 @@ public class JFWindow extends JFComponent {
     public JFWindow(int width, int height) {
         super();
 
-        JFrame window = new JFrame();
+        window = new JFrame();
         window.setSize(width, height);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLocationRelativeTo(null);
         window.setLayout(null);
         window.setResizable(true);
         window.setContentPane(panel);
-        window.setVisible(true);
 
         Dimension exterior = window.getSize();
         Insets insets = window.getInsets();
@@ -41,6 +41,7 @@ public class JFWindow extends JFComponent {
 
         componentBox.setSize(wUtil, hUtil);
 
+        window.setVisible(true);
     }
 
     public void repaint() {
@@ -56,6 +57,7 @@ public class JFWindow extends JFComponent {
     public JFComponent addChild(@NotNull JFComponent child) {
         this.childList.clear();
         super.addChild(child);
+        window.repaint();
         return this;
     }
 

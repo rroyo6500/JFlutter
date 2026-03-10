@@ -1,6 +1,9 @@
 package rroyo.JF.JFComponents;
 
 import org.jetbrains.annotations.NotNull;
+import rroyo.JF.JFComponents.SimpleComponents.JFContainer;
+import rroyo.JF.JFComponents.SimpleComponents.JFSizedBox;
+import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -12,6 +15,14 @@ import java.util.List;
  * and managing their relationships within a component hierarchy.
  */
 public abstract class JFComponent {
+
+    public enum sizes {
+        DEFAULT,
+        INFINITY
+    }
+
+    public sizes width = sizes.DEFAULT;
+    public sizes height = sizes.DEFAULT;
 
     /**
      * Represents the parent component in the hierarchy of graphical components.
@@ -197,6 +208,13 @@ public abstract class JFComponent {
         return this;
     }
 
+    public JFComponent setSize(sizes width, sizes height) {
+        this.width = width;
+        this.height = height;
+        invalidateLayout();
+        return this;
+    }
+
     public JFComponent setWidth(int width) {
         return setSize(width, componentBox.height);
     }
@@ -222,6 +240,8 @@ public abstract class JFComponent {
      * @param child the child component to be added. Must not be null.
      */
     public JFComponent addChild(@NotNull JFComponent child) {
+        if (child.getClass() == JFWindow.class) throw new RuntimeException("Cannot add JFWindow to a JFComponent");
+
         childList.add(child);
         child.init(this);
         invalidateLayout();
@@ -244,6 +264,11 @@ public abstract class JFComponent {
                 child.layout();
 
         layoutRecalculate();
+
+        if (width == sizes.INFINITY)
+            setSize(getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.width, componentBox.height);
+        if (height == sizes.INFINITY)
+            setSize(componentBox.width, getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.height);
 
         for (JFComponent child : childList)
             child.layout();

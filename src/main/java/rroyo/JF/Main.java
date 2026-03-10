@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        JFWindow window = new JFWindow(800, 800);
+        JFWindow window = new JFWindow(1000, 1000);
 
 
 

@@ -14,6 +14,22 @@ public class JFContainer extends JFComponent {
         setSize(width, height);
         this.color = color;
     }
+    public JFContainer(sizes width, sizes height, @Nullable Color color) {
+        setSize(width, height);
+        this.color = color;
+    }
+    public JFContainer(sizes width, int height, @Nullable Color color) {
+        setSize(width, sizes.DEFAULT);
+        setHeight(height);
+        this.color = color;
+    }
+    public JFContainer(int width, sizes height, @Nullable Color color) {
+        setSize(sizes.DEFAULT, height);
+        setWidth(width);
+        this.color = color;
+    }
+
+
 
     public JFContainer(int width, int height) {
         this(width, height, null);
