@@ -12,6 +12,4 @@ public abstract class JFComplexComponent extends JFComponent{
     @Override
     protected abstract void design(Graphics g);
 
-    @Override
-    protected abstract void mouseClickAction();
 }

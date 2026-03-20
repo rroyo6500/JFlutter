@@ -140,8 +140,8 @@ public class JFImage extends JFComponent {
      * @return the updated {@code JFImage} instance with the new size.
      */
     public JFImage setSizePercentage(int percentage) {
-        int newWidth = (int) (image.getWidth() * percentage / 100);
-        int newHeight = (int) (image.getHeight() * percentage / 100);
+        int newWidth = image.getWidth() * percentage / 100;
+        int newHeight = image.getHeight() * percentage / 100;
         setSize(newWidth, newHeight);
         return this;
     }
@@ -167,8 +167,4 @@ public class JFImage extends JFComponent {
 
     }
 
-    @Override
-    protected void mouseClickAction() {
-
-    }
 }

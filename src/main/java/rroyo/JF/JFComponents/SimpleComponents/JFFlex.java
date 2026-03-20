@@ -1,7 +1,7 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
-import rroyo.JF.JFComponents.Enums.CrossAxisAlignment;
-import rroyo.JF.JFComponents.Enums.MainAxisAlignment;
+import rroyo.JF.Enums.CrossAxisAlignment;
+import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.JFComponent;
 
 /**

@@ -6,9 +6,7 @@ import rroyo.JF.JUtils.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.event.*;
 
 /**
  * JFWindow represents a graphical window component that extends JFComponent.
@@ -92,27 +90,56 @@ public class JFWindow extends JFComponent {
 
         componentBox.setSize(width, height);
 
-        Mouse.addConfig(panel, new MouseAdapter() {
+        panel.setFocusable(true);
+        panel.requestFocusInWindow();
+
+        panel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-
-                mouseClickEvent(e.getX(), e.getY());
-
+            public void mousePressed(MouseEvent e) {
+                dispatchMousePress(e.getPoint());
             }
+        });
 
+        panel.addKeyListener(new KeyAdapter() {
             @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                super.mouseWheelMoved(e);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e);
+            public void keyPressed(KeyEvent e) {
+                dispatchKeyPress(e.getKeyCode());
             }
         });
 
         window.setVisible(true);
+    }
+
+    /**
+     * Dispatches a mouse press event to all child components.
+     * This method iterates through the list of child components
+     * and invokes their individual mouse press handling functionality
+     * for the provided point.
+     *
+     * @param p the Point where the mouse press occurred.
+     *          This parameter represents the coordinates of the
+     *          mouse press relative to the container.
+     */
+    private void dispatchMousePress(Point p) {
+        for (JFComponent child : childList) {
+            child.handleMousePress(p);
+        }
+    }
+
+    /**
+     * Dispatches a key press event to all child components.
+     * This method iterates through the list of child components
+     * and invokes their individual key press handling functionality
+     * for the given key code.
+     *
+     * @param keyCode the integer code of the key that has been pressed.
+     *                This parameter represents the specific key input
+     *                to be processed by child components.
+     */
+    private void dispatchKeyPress(int keyCode) {
+        for (JFComponent child : childList) {
+            child.handleKeyPress(keyCode);
+        }
     }
 
     /**
@@ -158,8 +185,4 @@ public class JFWindow extends JFComponent {
         g.fillRect(0, 0, componentBox.width, componentBox.height);
     }
 
-    @Override
-    protected void mouseClickAction() {
-
-    }
 }

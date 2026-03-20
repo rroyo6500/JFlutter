@@ -1,8 +1,8 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.Enums.CrossAxisAlignment;
-import rroyo.JF.JFComponents.Enums.MainAxisAlignment;
+import rroyo.JF.Enums.CrossAxisAlignment;
+import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
@@ -62,8 +62,4 @@ public class JFCenter extends JFComponent {
 
     }
 
-    @Override
-    protected void mouseClickAction() {
-
-    }
 }

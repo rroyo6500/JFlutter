@@ -43,8 +43,4 @@ public class JFSizedBox extends JFComponent {
 
     }
 
-    @Override
-    protected void mouseClickAction() {
-
-    }
 }

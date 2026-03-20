@@ -1,4 +1,4 @@
-package rroyo.JF.JFComponents.Enums;
+package rroyo.JF.Enums;
 
 public enum CrossAxisAlignment {
     DEFAULT,

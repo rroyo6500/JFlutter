@@ -2,7 +2,6 @@ package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import rroyo.JF.JFComponents.Enums.Sizes;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
@@ -91,10 +90,5 @@ public class JFContainer extends JFComponent {
 
         g.setColor(color);
         g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
-    }
-
-    @Override
-    protected void mouseClickAction() {
-        System.out.println("Container clicked! " + color );
     }
 }

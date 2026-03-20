@@ -141,8 +141,4 @@ public class JFText extends JFComponent {
         g.drawString(text, componentBox.x, componentBox.y + componentBox.height);
     }
 
-    @Override
-    protected void mouseClickAction() {
-
-    }
 }

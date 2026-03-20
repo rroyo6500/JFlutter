@@ -1,8 +1,6 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.Enums.CrossAxisAlignment;
-import rroyo.JF.JFComponents.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
@@ -123,8 +121,4 @@ public class JFRow extends JFFlex {
 
     }
 
-    @Override
-    protected void mouseClickAction() {
-
-    }
 }
