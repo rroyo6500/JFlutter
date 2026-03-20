@@ -147,6 +147,11 @@ public class JFImage extends JFComponent {
     }
 
     @Override
+    public JFComponent addChild(@NotNull JFComponent child) {
+        throw new UnsupportedOperationException("JFImage does not support child components");
+    }
+
+    @Override
     protected void layoutRecalculate() {
 
     }

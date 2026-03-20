@@ -14,12 +14,7 @@ public class Main {
 
         JFWindow window = new JFWindow(1000, 1000);
 
-        window.addChild(
-                new JFCenter(
-                        new JFImage("C:\\Users\\r.royo\\Documents\\DAM\\Clase\\Ingles\\Proyectos\\parte2\\auth_aplicacion\\auth_application\\lib\\images\\background1.jpg")
-                                .setSizePercentage(50)
-                )
-        );
+
 
     }
 

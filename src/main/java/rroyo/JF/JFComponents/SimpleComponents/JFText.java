@@ -1,5 +1,6 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
+import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
@@ -96,6 +97,11 @@ public class JFText extends JFComponent {
     public JFText setColor(Color color) {
         this.color = color;
         return this;
+    }
+
+    @Override
+    public JFComponent addChild(@NotNull JFComponent child) {
+        throw new UnsupportedOperationException("JFText does not support child components");
     }
 
     /**
