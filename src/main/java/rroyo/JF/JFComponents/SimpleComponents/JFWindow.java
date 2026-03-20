@@ -6,11 +6,54 @@ import rroyo.JF.JFComponents.JFComponent;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * JFWindow represents a graphical window component that extends JFComponent.
+ * This class manages a JFrame instance and allows customization of its visual
+ * appearance and behavior. It also handles drawing and layout management
+ * through its associated JPanel.
+ * <br>
+ * The class provides the ability to set background color, repaint the window,
+ * and add a single child component while retaining control over layout and rendering.
+ */
 public class JFWindow extends JFComponent {
 
+    /**
+     * Represents the background color of the `JFWindow` component.
+     * This color is used to fill the entire drawing area of the window.
+     * The default value is `Color.WHITE`, but it can be updated using the
+     * `setColor(Color color)` method for customizing the appearance.
+     */
     private Color color = Color.WHITE;
+
+    /**
+     * A `JFrame` instance managed by the `JFWindow` class to represent a graphical window
+     * component. This window serves as the main container for rendering graphics, managing
+     * layout, and displaying child components.
+     * The `window` variable is initialized during the creation of a `JFWindow` instance
+     * and is configured with specific parameters such as size, default close operation,
+     * and layout settings. It acts as the core element for visual representation in the
+     * `JFWindow` class.
+     */
     private final JFrame window;
 
+    /**
+     * The `panel` variable represents a custom `JPanel` used as the main content pane
+     * for rendering and managing layout operations of the `JFWindow` component.
+     * <br>
+     * This panel overrides the `paintComponent` method to integrate the custom rendering
+     * logic of `JFWindow`. During the paint operation, it executes the following:
+     * <br>
+     * - Invokes the `layout` method of the enclosing `JFWindow` instance to perform layout
+     *   operations for the component and its children. <br>
+     * - Validates the structure of the component tree through the `validateTree` method,
+     *   ensuring the integrity and proper configuration of all child components. <br>
+     * - Calls the `draw` method of the enclosing `JFWindow` instance to manage custom
+     *   drawing logic, including the rendering of the current component and its children. <br>
+     *
+     * Being declared `protected` and `final`, the panel is intended to serve as a core
+     * component within the `JFWindow` class while restricting subclass modifications
+     * outside of its usage in this context.
+     */
     protected final JPanel panel = new JPanel(){
         @Override
         public void paintComponent(Graphics g) {
@@ -22,6 +65,15 @@ public class JFWindow extends JFComponent {
         }
     };
 
+    /**
+     * Constructs a JFWindow instance with the specified width and height.
+     * This constructor initializes a JFrame and configures its size, location,
+     * layout, and default behavior. It also adjusts the internal component
+     * dimensions to account for window insets.
+     *
+     * @param width  the width of the JFrame in pixels
+     * @param height the height of the JFrame in pixels
+     */
     public JFWindow(int width, int height) {
         super();
 
@@ -44,10 +96,25 @@ public class JFWindow extends JFComponent {
         window.setVisible(true);
     }
 
+    /**
+     * Repaints the current window by invoking the repaint method of the internal panel.
+     * This method ensures that the window's visual components are refreshed and any
+     * graphical updates are applied.
+     */
     public void repaint() {
         panel.repaint();
     }
 
+    /**
+     * Sets the color of this JFWindow instance.
+     * This method updates the internal color field and returns the current instance
+     * to enable method chaining.
+     *
+     * @param color the Color to be set for this JFWindow. This parameter defines the
+     *              visual color of the window.
+     * @return the current JFWindow instance with the updated color, facilitating
+     *         method chaining for further configurations.
+     */
     public JFWindow setColor(Color color) {
         this.color = color;
         return this;

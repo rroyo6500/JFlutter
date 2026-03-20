@@ -1,6 +1,7 @@
 package rroyo.JF.JFComponents;
 
 import org.jetbrains.annotations.NotNull;
+import rroyo.JF.JFComponents.Enums.Sizes;
 import rroyo.JF.JFComponents.SimpleComponents.JFContainer;
 import rroyo.JF.JFComponents.SimpleComponents.JFSizedBox;
 import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
@@ -15,14 +16,6 @@ import java.util.List;
  * and managing their relationships within a component hierarchy.
  */
 public abstract class JFComponent {
-
-    public enum sizes {
-        DEFAULT,
-        INFINITY
-    }
-
-    public sizes width = sizes.DEFAULT;
-    public sizes height = sizes.DEFAULT;
 
     /**
      * Represents the parent component in the hierarchy of graphical components.
@@ -124,6 +117,16 @@ public abstract class JFComponent {
      */
     public JFComponent() {}
 
+    /**
+     * Constructs a new JFComponent with a specified layout requirement for child elements.
+     * <br>
+     * This constructor allows the caller to specify whether the layout mechanism
+     * should require at least one child component to function properly.
+     *
+     * @param layoutRequireChild a boolean value indicating whether layout computation
+     *                           requires the presence of at least one child component.
+     *                           If true, the layout will enforce this requirement.
+     */
     protected JFComponent(boolean layoutRequireChild) {
         this.layoutRequireChild = layoutRequireChild;
     }
@@ -201,28 +204,58 @@ public abstract class JFComponent {
         }
     }
 
-
+    /**
+     * Sets the size of the component by updating its width and height dimensions.
+     * This method modifies the dimensions of the component's bounding box and
+     * marks the layout as invalid, ensuring that the component's layout is
+     * recalculated when necessary.
+     *
+     * @param width  the new width of the component, in pixels.
+     * @param height the new height of the component, in pixels.
+     * @return the current instance of {@code JFComponent}, allowing for method chaining.
+     */
     public JFComponent setSize(int width, int height) {
         componentBox.setSize(width, height);
         invalidateLayout();
         return this;
     }
 
-    public JFComponent setSize(sizes width, sizes height) {
-        this.width = width;
-        this.height = height;
-        invalidateLayout();
-        return this;
-    }
-
+    /**
+     * Sets the width of the component by updating the width dimension
+     * while preserving the current height. This method modifies the
+     * dimensions of the component's bounding box and marks the layout
+     * as invalid, ensuring that the component's layout is recalculated
+     * if necessary.
+     *
+     * @param width the new width of the component, in pixels.
+     * @return the current instance of {@code JFComponent}, allowing for method chaining.
+     */
     public JFComponent setWidth(int width) {
         return setSize(width, componentBox.height);
     }
 
+    /**
+     * Sets the height of the component while retaining its current width.
+     * This method updates the height dimension of the component's bounding box
+     * and marks the layout as invalid, ensuring that the layout is recalculated
+     * when necessary.
+     *
+     * @param height the new height of the component, in pixels.
+     * @return the current instance of {@code JFComponent}, allowing for method chaining.
+     */
     public JFComponent setHeight(int height) {
         return setSize(componentBox.width, height);
     }
 
+    /**
+     * Sets the position of the component using local x and y coordinates.
+     * Updates the component's absolute position relative to its parent
+     * and invalidates the layout.
+     *
+     * @param x the x-coordinate of the component's new local position.
+     * @param y the y-coordinate of the component's new local position.
+     * @return the current instance of {@code JFComponent}, allowing for method chaining.
+     */
     public JFComponent setPosition(int x, int y) {
         this.localX = x;
         this.localY = y;
@@ -248,6 +281,19 @@ public abstract class JFComponent {
         return this;
     }
 
+    /**
+     * Marks the layout of this component as invalid and recursively propagates
+     * the invalidation to its parent component, if any.
+     * <br>
+     * This method sets the internal `layoutDirty` flag to true, indicating
+     * that the component's layout needs to be recalculated. If the component
+     * has a parent, the parent component's layout is also invalidated by
+     * recursively calling its `invalidateLayout` method.
+     * <br>
+     * This mechanism ensures that layout changes propagate upward through
+     * the component hierarchy, ensuring all affected components are updated
+     * during the next layout recalculation.
+     */
     protected final void invalidateLayout() {
         layoutDirty = true;
 
@@ -255,6 +301,22 @@ public abstract class JFComponent {
             parent.invalidateLayout();
     }
 
+    /**
+     * Performs the layout operations for the current component and its children.
+     *
+     * This method checks whether the layout is marked as dirty. If the layout is up-to-date,
+     * the method terminates early. Otherwise, it executes the layout procedures for the
+     * component and its children, ensuring proper recalculations and size adjustments.
+     *
+     * The layout process includes:
+     * - Propagating layout operations to child components if required.
+     * - Recalculating layout properties for the current component using the defined logic.
+     * - Adjusting the component's size if its width or height is marked as infinite.
+     * - Setting the layout as up-to-date (not dirty) upon completion.
+     *
+     * This method is protected, final, and intended to ensure consistent and efficient layout
+     * calculations across a component hierarchy.
+     */
     protected final void layout() {
 
         if (!layoutDirty) return;
@@ -265,19 +327,33 @@ public abstract class JFComponent {
 
         layoutRecalculate();
 
-        if (width == sizes.INFINITY)
-            setSize(getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.width, componentBox.height);
-        if (height == sizes.INFINITY)
-            setSize(componentBox.width, getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.height);
-
         for (JFComponent child : childList)
             child.layout();
 
         layoutDirty = false;
     }
 
+    /**
+     * Recalculates the layout of the component. This method should be implemented
+     * by subclasses to define the specific recalculation logic for arranging
+     * or resizing elements within the component. It is typically invoked when
+     * a layout change or update is required due to external or internal constraints.
+     */
     protected abstract void layoutRecalculate();
 
+    /**
+     * Recursively validates the structure and integrity of the tree
+     * of components starting from the current component.
+     * <br>
+     * This method ensures that the current component is validated within
+     * the context of its parent and subsequently validates all its child
+     * components in depth-first order.
+     * <br>
+     * Note:
+     * - The method is protected and can only be accessed within its package
+     *   or by subclasses.
+     * - It is declared final, indicating it cannot be overridden by subclasses.
+     */
     protected final void validateTree() {
         validateWithinParent();
 
@@ -286,9 +362,11 @@ public abstract class JFComponent {
     }
 
     /**
-     * Search in the tree any componeng with the given class.
+     * Retrieves the closest component in the tree that matches one of the specified classes.
+     * The method traverses the hierarchy of the current component's parent objects to find the nearest matching component.
      *
-     * @return Any component of the upperTree with the given class.
+     * @param componentClass one or more classes that the desired component should match
+     * @return the closest matching component in the hierarchy, or null if no matching component is found
      */
     @SafeVarargs
     protected final JFComponent getComponentFromTree(Class<? extends JFComponent>... componentClass){

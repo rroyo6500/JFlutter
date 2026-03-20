@@ -1,12 +1,26 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import rroyo.JF.JFComponents.Enums.CrossAxisAlignment;
+import rroyo.JF.JFComponents.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
 
+/**
+ * The JFCenter class is a specialized {@link JFComponent} that centers
+ * a single child component within its parent container. The child
+ * component's position is dynamically recalculated based on its dimensions
+ * and the dimensions of the parent container.
+ */
 public class JFCenter extends JFComponent {
 
+    /**
+     * Constructs a new JFCenter component, which centers its child component
+     * within its parent container.
+     *
+     * @param child the child component to be centered within the parent container
+     */
     public JFCenter(JFComponent child) {
         super(true);
         addChild(child);
@@ -32,20 +46,13 @@ public class JFCenter extends JFComponent {
 
         child.setPosition(childX, childY);
 
-        if (child.getClass() == JFRow.class) {
-            JFRow row = (JFRow) child;
+        if (child.getClass() == JFRow.class || child.getClass() == JFColumn.class) {
+            JFFlex flex = (JFFlex) child;
 
-            if (row.maa == JFRow.mainAxisAlignment.DEFAULT)
-                row.mainAxisAlignment(JFRow.mainAxisAlignment.CENTER);
-            if (row.caa == JFRow.crossAxisAlignment.DEFAULT)
-                row.crossAxisAlignment(JFRow.crossAxisAlignment.CENTER);
-        } else if (child.getClass() == JFColumn.class) {
-            JFColumn column = (JFColumn) child;
-
-            if (column.maa == JFColumn.mainAxisAlignment.DEFAULT)
-                column.mainAxisAlignment(JFColumn.mainAxisAlignment.CENTER);
-            if (column.caa == JFColumn.crossAxisAlignment.DEFAULT)
-                column.crossAxisAlignment(JFColumn.crossAxisAlignment.CENTER);
+            if (flex.maa == MainAxisAlignment.DEFAULT)
+                flex.mainAxisAlignment(MainAxisAlignment.CENTER);
+            if (flex.caa == CrossAxisAlignment.DEFAULT)
+                flex.crossAxisAlignment(CrossAxisAlignment.CENTER);
         }
 
     }
