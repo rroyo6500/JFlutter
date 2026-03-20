@@ -92,4 +92,9 @@ public class JFContainer extends JFComponent {
         g.setColor(color);
         g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
     }
+
+    @Override
+    protected void mouseClickAction() {
+        System.out.println("Container clicked! " + color );
+    }
 }

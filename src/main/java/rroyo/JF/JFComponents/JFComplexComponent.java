@@ -2,17 +2,16 @@ package rroyo.JF.JFComponents;
 
 import java.awt.*;
 
-public class JFComplexComponent extends JFComponent{
+public abstract class JFComplexComponent extends JFComponent{
 
 
 
     @Override
-    protected void layoutRecalculate() {
-
-    }
+    protected abstract void layoutRecalculate();
 
     @Override
-    protected void design(Graphics g) {
+    protected abstract void design(Graphics g);
 
-    }
+    @Override
+    protected abstract void mouseClickAction();
 }

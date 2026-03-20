@@ -61,4 +61,9 @@ public class JFCenter extends JFComponent {
     protected void design(Graphics g) {
 
     }
+
+    @Override
+    protected void mouseClickAction() {
+
+    }
 }

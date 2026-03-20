@@ -420,4 +420,16 @@ public abstract class JFComponent {
      */
     protected abstract void design(Graphics g);
 
+    protected void mouseClickEvent(int x, int y) {
+        for (JFComponent child : childList) {
+            if (child.componentBox.contains(x, y)) {
+                child.mouseClickEvent(x, y);
+                return;
+            }
+        }
+        mouseClickAction();
+    }
+
+    protected abstract void mouseClickAction();
+
 }

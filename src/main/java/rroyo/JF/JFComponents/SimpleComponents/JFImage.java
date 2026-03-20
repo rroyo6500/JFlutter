@@ -166,4 +166,9 @@ public class JFImage extends JFComponent {
 
 
     }
+
+    @Override
+    protected void mouseClickAction() {
+
+    }
 }

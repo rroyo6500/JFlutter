@@ -2,9 +2,13 @@ package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JUtils.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 
 /**
  * JFWindow represents a graphical window component that extends JFComponent.
@@ -78,20 +82,35 @@ public class JFWindow extends JFComponent {
         super();
 
         window = new JFrame();
-        window.setSize(width, height);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setLocationRelativeTo(null);
         window.setLayout(null);
-        window.setResizable(true);
+        window.setResizable(false);
+        panel.setPreferredSize(new Dimension(width, height));
         window.setContentPane(panel);
+        window.pack();
+        window.setLocationRelativeTo(null);
 
-        Dimension exterior = window.getSize();
-        Insets insets = window.getInsets();
+        componentBox.setSize(width, height);
 
-        int wUtil = exterior.width - insets.left - insets.right;
-        int hUtil = exterior.height - insets.top - insets.bottom;
+        Mouse.addConfig(panel, new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
 
-        componentBox.setSize(wUtil, hUtil);
+                mouseClickEvent(e.getX(), e.getY());
+
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                super.mouseWheelMoved(e);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+            }
+        });
 
         window.setVisible(true);
     }
@@ -137,5 +156,10 @@ public class JFWindow extends JFComponent {
     protected void design(Graphics g) {
         g.setColor(color);
         g.fillRect(0, 0, componentBox.width, componentBox.height);
+    }
+
+    @Override
+    protected void mouseClickAction() {
+
     }
 }

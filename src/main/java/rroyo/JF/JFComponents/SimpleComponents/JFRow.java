@@ -122,4 +122,9 @@ public class JFRow extends JFFlex {
     protected void design(Graphics g) {
 
     }
+
+    @Override
+    protected void mouseClickAction() {
+
+    }
 }
