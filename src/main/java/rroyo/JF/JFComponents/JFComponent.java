@@ -57,7 +57,7 @@ public abstract class JFComponent {
      * This variable is expected to be initialized and updated as necessary to
      * accurately represent the component's current geometric bounds.
      */
-    public Rectangle componentBox = new Rectangle(0, 0, 0, 0);
+    public final Rectangle componentBox = new Rectangle(0, 0, 0, 0);
 
     private boolean layoutDirty = true;
 
@@ -139,6 +139,9 @@ public abstract class JFComponent {
      * @throws IllegalStateException if the component's size or position exceeds the parent's bounds.
      */
     protected void init(@NotNull JFComponent parent) {
+        if (this.parent != null)
+            throw new IllegalStateException("Component already has a parent.");
+
         this.parent = parent;
         updateAbsolutePositionFromLocal();
         invalidateLayout();
@@ -301,17 +304,17 @@ public abstract class JFComponent {
 
     /**
      * Performs the layout operations for the current component and its children.
-     *
+     * <br>
      * This method checks whether the layout is marked as dirty. If the layout is up-to-date,
      * the method terminates early. Otherwise, it executes the layout procedures for the
      * component and its children, ensuring proper recalculations and size adjustments.
-     *
-     * The layout process includes:
-     * - Propagating layout operations to child components if required.
-     * - Recalculating layout properties for the current component using the defined logic.
-     * - Adjusting the component's size if its width or height is marked as infinite.
-     * - Setting the layout as up-to-date (not dirty) upon completion.
-     *
+     * <br>
+     * The layout process includes: <br>
+     * - Propagating layout operations to child components if required. <br>
+     * - Recalculating layout properties for the current component using the defined logic. <br>
+     * - Adjusting the component's size if its width or height is marked as infinite. <br>
+     * - Setting the layout as up-to-date (not dirty) upon completion. <br>
+     * <br>
      * This method is protected, final, and intended to ensure consistent and efficient layout
      * calculations across a component hierarchy.
      */

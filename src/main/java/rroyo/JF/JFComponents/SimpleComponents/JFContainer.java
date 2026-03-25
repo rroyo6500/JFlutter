@@ -4,16 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Decorations.Decoration;
 import rroyo.JF.JFComponents.JFComponent;
-import rroyo.JF.JFEvents.JFActionEvent;
-import rroyo.JF.JFEvents.JFActionEventSource;
-import rroyo.JF.JFEvents.JFActionListener;
-import rroyo.JF.JFEvents.JFHoverEvent;
-import rroyo.JF.JFEvents.JFHoverEventSource;
-import rroyo.JF.JFEvents.JFHoverListener;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * JFContainer is a specialized component that extends the functionality of JFComponent.
@@ -24,7 +16,7 @@ import java.util.List;
  * The container's layout and child components are managed according to the defined layout rules
  * and hierarchy of JFComponent.
  */
-public class JFContainer extends JFComponent implements JFActionEventSource, JFHoverEventSource {
+public class JFContainer extends JFComponent {
 
     /**
      * Represents the visual decoration of the container, providing customization
@@ -37,9 +29,6 @@ public class JFContainer extends JFComponent implements JFActionEventSource, JFH
      * graphical representation of the container.
      */
     private final Decoration decoration;
-
-    private final List<JFActionListener> actionListeners = new ArrayList<>();
-    private final List<JFHoverListener> hoverListeners = new ArrayList<>();
 
     /**
      * Constructs a new instance of JFContainer with the specified dimensions and an optional background color.
@@ -76,7 +65,7 @@ public class JFContainer extends JFComponent implements JFActionEventSource, JFH
     }
 
     @Override
-    public JFComponent addChild(@NotNull JFComponent child) {
+    public JFContainer addChild(@NotNull JFComponent child) {
         childList.clear();
         super.addChild(child);
         return this;
@@ -101,45 +90,4 @@ public class JFContainer extends JFComponent implements JFActionEventSource, JFH
 
     }
 
-    @Override
-    public JFContainer addActionListener(JFActionListener listener) {
-        if (listener == null) throw new IllegalArgumentException("Listener cannot be null");
-        actionListeners.add(listener);
-        return this;
-    }
-
-    @Override
-    public JFContainer removeActionListener(JFActionListener listener) {
-        actionListeners.remove(listener);
-        return this;
-    }
-
-    @Override
-    public JFContainer dispatchActionEvent(JFActionEvent event) {
-        for (JFActionListener listener : actionListeners) {
-            listener.actionPerformed(event);
-        }
-        return this;
-    }
-
-    @Override
-    public JFContainer addHoverListener(JFHoverListener listener) {
-        if (listener == null) throw new IllegalArgumentException("Listener cannot be null");
-        hoverListeners.add(listener);
-        return this;
-    }
-
-    @Override
-    public JFContainer removeHoverListener(JFHoverListener listener) {
-        hoverListeners.remove(listener);
-        return this;
-    }
-
-    @Override
-    public JFContainer dispatchHoverEvent(JFHoverEvent event) {
-        for (JFHoverListener listener : hoverListeners) {
-            listener.hoverEvent(event);
-        }
-        return this;
-    }
 }

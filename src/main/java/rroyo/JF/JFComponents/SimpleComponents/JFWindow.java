@@ -112,11 +112,14 @@ public class JFWindow extends JFComponent {
                 if (source != null) {
                     source.dispatchActionEvent(new JFActionEvent((JFComponent) source, "click"));
                 }
+
+                repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 dispatchHoverTransition(null, e.getX(), e.getY());
+                repaint();
             }
         });
 
@@ -126,6 +129,7 @@ public class JFWindow extends JFComponent {
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
                 JFHoverEventSource source = findEventSource(target, JFHoverEventSource.class);
                 dispatchHoverTransition((JFComponent) source, e.getX(), e.getY());
+                repaint();
             }
         });
     }

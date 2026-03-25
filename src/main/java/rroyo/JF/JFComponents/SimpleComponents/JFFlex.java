@@ -30,7 +30,7 @@ public abstract class JFFlex extends JFComponent {
      * - `SPACE_AROUND`: Distributes children with equal space around them. <br>
      * - `SPACE_EVENLY`: Distributes children with equal space between and around them. <br>
      */
-    public MainAxisAlignment maa = MainAxisAlignment.DEFAULT;
+    protected MainAxisAlignment maa = MainAxisAlignment.DEFAULT;
 
     /**
      * Represents the cross-axis alignment for a layout. The cross-axis determines
@@ -46,7 +46,7 @@ public abstract class JFFlex extends JFComponent {
      * <br>
      * The default value is {@code CrossAxisAlignment.DEFAULT}.
      */
-    public CrossAxisAlignment caa = CrossAxisAlignment.DEFAULT;
+    protected CrossAxisAlignment caa = CrossAxisAlignment.DEFAULT;
 
     /**
      * Constructs a new instance of the JFFlex class. This constructor initializes the object
