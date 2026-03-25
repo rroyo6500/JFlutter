@@ -2,8 +2,6 @@ package rroyo.JF.JFComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
-import rroyo.JF.JFEvents.JFActionEvent;
-import rroyo.JF.JFEvents.JFActionListener;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -142,6 +140,7 @@ public abstract class JFComponent {
      */
     protected void init(@NotNull JFComponent parent) {
         this.parent = parent;
+        updateAbsolutePositionFromLocal();
         invalidateLayout();
     }
 
@@ -419,69 +418,33 @@ public abstract class JFComponent {
      */
     protected abstract void design(Graphics g);
 
-    // Gestion de eventos
-
     /**
-     * A thread-safe list that holds references to registered {@link JFActionListener} objects.
-     * These listeners are notified of actions or events triggered within the component or system.
-     * The list is immutable from external modification, ensuring controlled access
-     * to listener registration and invocation processes.
-     */
-    protected final List<JFActionListener> actionListeners = new ArrayList<>();
-
-    /**
-     * Adds an action listener to the list of listeners.
+     * Checks whether an absolute point is inside this component bounds.
      *
-     * @param l the action listener to be added
+     * @param x absolute x
+     * @param y absolute y
+     * @return true when the point is inside this component
      */
-    public void addActionListener(JFActionListener l) {
-        actionListeners.add(l);
+    public final boolean containsPoint(int x, int y) {
+        return componentBox.contains(x, y);
     }
 
     /**
-     * Notifies all registered action listeners that an action has occurred.
+     * Finds the top-most component at a given absolute point.
+     * Children are evaluated in reverse draw order.
      *
-     * @param action the action command describing the event that occurred
+     * @param x absolute x
+     * @param y absolute y
+     * @return the deepest component containing the point, or null
      */
-    protected void fireActionPerformed(String action) {
-        JFActionEvent e = new JFActionEvent(this, action);
-        for (JFActionListener l : actionListeners) {
-            l.actionPerformed(e);
+    public final JFComponent findTopMostAt(int x, int y) {
+        for (int i = childList.size() - 1; i >= 0; i--) {
+            JFComponent child = childList.get(i);
+            JFComponent target = child.findTopMostAt(x, y);
+            if (target != null) return target;
         }
+
+        return containsPoint(x, y) ? this : null;
     }
-
-    /**
-     * Handles a mouse press event at the specified point.
-     * This method checks if the point is within the component's bounding box
-     * and triggers the appropriate actions for the component and its children.
-     *
-     * @param p the point where the mouse press occurred
-     */
-    public void handleMousePress(Point p) {
-        if (componentBox.contains(p)) {
-            onMousePressed();
-
-            for (JFComponent child : childList) {
-                child.handleMousePress(p);
-            }
-        }
-    }
-
-    /**
-     * Handles a key press event by processing the given key code
-     * and propagating the event to child components.
-     *
-     * @param keyCode the key code of the pressed key
-     */
-    public void handleKeyPress(int keyCode) {
-        onKeyPressed(keyCode);
-
-        for (JFComponent child : childList) {
-            child.handleKeyPress(keyCode);
-        }
-    }
-
-    protected void onMousePressed() {}
-    protected void onKeyPressed(int keyCode) {}
 
 }

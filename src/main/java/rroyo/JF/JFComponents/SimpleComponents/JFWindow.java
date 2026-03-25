@@ -2,7 +2,10 @@ package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.JFComponent;
-import rroyo.JF.JUtils.*;
+import rroyo.JF.JFEvents.JFActionEvent;
+import rroyo.JF.JFEvents.JFActionEventSource;
+import rroyo.JF.JFEvents.JFHoverEvent;
+import rroyo.JF.JFEvents.JFHoverEventSource;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,6 +40,8 @@ public class JFWindow extends JFComponent {
      * `JFWindow` class.
      */
     private final JFrame window;
+
+    private JFComponent hoveredComponent;
 
     /**
      * The `panel` variable represents a custom `JPanel` used as the main content pane
@@ -92,54 +97,68 @@ public class JFWindow extends JFComponent {
 
         panel.setFocusable(true);
         panel.requestFocusInWindow();
-
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                dispatchMousePress(e.getPoint());
-            }
-        });
-
-        panel.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                dispatchKeyPress(e.getKeyCode());
-            }
-        });
+        setupInputListeners();
 
         window.setVisible(true);
     }
 
-    /**
-     * Dispatches a mouse press event to all child components.
-     * This method iterates through the list of child components
-     * and invokes their individual mouse press handling functionality
-     * for the provided point.
-     *
-     * @param p the Point where the mouse press occurred.
-     *          This parameter represents the coordinates of the
-     *          mouse press relative to the container.
-     */
-    private void dispatchMousePress(Point p) {
-        for (JFComponent child : childList) {
-            child.handleMousePress(p);
+    private void setupInputListeners() {
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
+
+                if (source != null) {
+                    source.dispatchActionEvent(new JFActionEvent((JFComponent) source, "click"));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                dispatchHoverTransition(null, e.getX(), e.getY());
+            }
+        });
+
+        panel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFHoverEventSource source = findEventSource(target, JFHoverEventSource.class);
+                dispatchHoverTransition((JFComponent) source, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void dispatchHoverTransition(JFComponent target, int mouseX, int mouseY) {
+        if (hoveredComponent != target) {
+            if (hoveredComponent instanceof JFHoverEventSource previous) {
+                previous.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, JFHoverEvent.Type.EXIT));
+            }
+
+            if (target instanceof JFHoverEventSource next) {
+                next.dispatchHoverEvent(new JFHoverEvent(target, mouseX, mouseY, JFHoverEvent.Type.ENTER));
+            }
+        }
+
+        hoveredComponent = target;
+
+        if (hoveredComponent instanceof JFHoverEventSource current) {
+            current.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, JFHoverEvent.Type.MOVE));
         }
     }
 
-    /**
-     * Dispatches a key press event to all child components.
-     * This method iterates through the list of child components
-     * and invokes their individual key press handling functionality
-     * for the given key code.
-     *
-     * @param keyCode the integer code of the key that has been pressed.
-     *                This parameter represents the specific key input
-     *                to be processed by child components.
-     */
-    private void dispatchKeyPress(int keyCode) {
-        for (JFComponent child : childList) {
-            child.handleKeyPress(keyCode);
+    private <T> T findEventSource(JFComponent start, Class<T> type) {
+        JFComponent current = start;
+
+        while (current != null) {
+            if (type.isInstance(current)) {
+                return type.cast(current);
+            }
+            current = current.parent;
         }
+
+        return null;
     }
 
     /**
@@ -169,6 +188,7 @@ public class JFWindow extends JFComponent {
     @Override
     public JFComponent addChild(@NotNull JFComponent child) {
         this.childList.clear();
+        hoveredComponent = null;
         super.addChild(child);
         window.repaint();
         return this;

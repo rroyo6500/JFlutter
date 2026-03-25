@@ -29,7 +29,7 @@ public class JFActionEvent {
      * {@link JFActionEvent} object creation and serves as a chronological
      * reference for the event.
      */
-    private final long timestmap;
+    private final long timestamp;
 
     /**
      * Creates a new instance of {@code JFActionEvent}.
@@ -42,7 +42,7 @@ public class JFActionEvent {
     public JFActionEvent(JFComponent source, String action) {
         this.source = source;
         this.action = action;
-        this.timestmap = System.currentTimeMillis();
+        this.timestamp = System.currentTimeMillis();
     }
 
     public JFComponent getSource() {
@@ -51,5 +51,9 @@ public class JFActionEvent {
 
     public String getAction() {
         return action;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }
