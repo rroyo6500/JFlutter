@@ -50,29 +50,6 @@ public class JFColumn extends JFFlex {
         super();
     }
 
-    /**
-     * Adds the specified child components to the column layout.
-     * This method appends the provided children to the column, ensuring that
-     * no instance of {@code JFCenter} is added, as it is not supported within a column.
-     * Attempting to add {@code JFCenter} will throw an {@link IllegalArgumentException}.
-     *
-     * @param children the array of {@link JFComponent} instances to be added as children
-     *                 of this column. All provided components will be appended to the column
-     *                 layout in their respective order. Cannot contain instances of {@code JFCenter}.
-     * @return the current {@link JFColumn} instance, allowing for method chaining.
-     * @throws IllegalArgumentException if one of the specified children is an instance of {@code JFCenter}.
-     */
-    public JFColumn addChilds(@NotNull JFComponent... children) {
-        for (JFComponent child : children) {
-
-            if (child.getClass() == JFCenter.class)
-                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a Column");
-
-            super.addChild(child);
-        }
-        return this;
-    }
-
     @Override
     protected void layoutRecalculate() {
 
@@ -80,18 +57,18 @@ public class JFColumn extends JFFlex {
         int maxChildWidth = 0;
 
         for (JFComponent child : childList) {
-            totalChildrenHeight += child.componentBox.height;
-            maxChildWidth = Math.max(maxChildWidth, child.componentBox.width);
+            totalChildrenHeight += child.getHeight();
+            maxChildWidth = Math.max(maxChildWidth, child.getWidth());
         }
 
         int finalHeight = totalChildrenHeight;
         if (parent != null) {
-            finalHeight = (parent.componentBox.height > 0)
+            finalHeight = (parent.getHeight() > 0)
                     ? (parent.getClass() == this.getClass())
                         ? totalChildrenHeight
-                        : parent.componentBox.height
+                        : parent.getHeight()
                     : (parent.getClass() == JFCenter.class)
-                        ? getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.height
+                        ? getComponentFromTree(JFContainer.class, JFSizedBox.class).getHeight()
                         : totalChildrenHeight
             ;
         }
@@ -108,13 +85,13 @@ public class JFColumn extends JFFlex {
 
         for (JFComponent child : childList) {
             int childX = switch (caa) {
-                case CENTER -> (componentBox.width - child.componentBox.width) / 2;
-                case END -> componentBox.width - child.componentBox.width;
+                case CENTER -> (componentBox.width - child.getWidth()) / 2;
+                case END -> componentBox.width - child.getWidth();
                 default -> 0;
             };
 
             child.setPosition(childX, (int) currentY);
-            currentY += child.componentBox.height + gap;
+            currentY += child.getHeight() + gap;
         }
 
     }

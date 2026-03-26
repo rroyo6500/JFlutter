@@ -46,32 +46,6 @@ public class JFRow extends JFFlex {
         super();
     }
 
-    /**
-     * Adds the specified child components to this JFRow instance.
-     * JFRow arranges its child components in a horizontal layout.
-     * <br>
-     * Any attempt to add a JFCenter instance as a child will result in
-     * an IllegalArgumentException, since JFCenter is not a valid child
-     * component for JFRow.
-     *
-     * @param children the array of JFComponent objects to be added as
-     *                 children to this JFRow. Each child is validated and
-     *                 added to the layout. If a child of type JFCenter is
-     *                 encountered, an exception is thrown.
-     *
-     * @throws IllegalArgumentException if any child in the provided array
-     *                                  is an instance of JFCenter.
-     */
-    private void addChilds(@NotNull JFComponent... children) {
-        for (JFComponent child : children) {
-
-            if (child.getClass() == JFCenter.class)
-                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a Row");
-
-            super.addChild(child);
-        }
-    }
-
     @Override
     protected void layoutRecalculate() {
 
@@ -79,18 +53,18 @@ public class JFRow extends JFFlex {
         int maxChildHeight = 0;
 
         for (JFComponent child : childList) {
-            totalChildrenWidth += child.componentBox.width;
-            maxChildHeight = Math.max(maxChildHeight, child.componentBox.height);
+            totalChildrenWidth += child.getWidth();
+            maxChildHeight = Math.max(maxChildHeight, child.getHeight());
         }
 
         int finalWidth = totalChildrenWidth;
         if (parent != null) {
-            finalWidth = (parent.componentBox.width > 0)
+            finalWidth = (parent.getWidth() > 0)
                     ? (parent.getClass() == this.getClass())
                         ? totalChildrenWidth
-                        : parent.componentBox.width
+                        : parent.getWidth()
                     : (parent.getClass() == JFCenter.class)
-                        ? getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.width
+                        ? getComponentFromTree(JFContainer.class, JFSizedBox.class).getWidth()
                         : totalChildrenWidth
             ;
         }
@@ -107,13 +81,13 @@ public class JFRow extends JFFlex {
 
         for (JFComponent child : childList) {
             int childY = switch (caa) {
-                case CENTER -> (componentBox.height - child.componentBox.height) / 2;
-                case END -> componentBox.height - child.componentBox.height;
+                case CENTER -> (componentBox.height - child.getHeight()) / 2;
+                case END -> componentBox.height - child.getHeight();
                 default -> 0;
             };
 
             child.setPosition((int) currentX, childY);
-            currentX += child.componentBox.width + gap;
+            currentX += child.getWidth() + gap;
         }
 
     }

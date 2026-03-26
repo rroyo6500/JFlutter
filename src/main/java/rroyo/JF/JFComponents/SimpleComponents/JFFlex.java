@@ -1,5 +1,6 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
+import org.jetbrains.annotations.NotNull;
 import rroyo.JF.Enums.CrossAxisAlignment;
 import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.JFComponent;
@@ -84,6 +85,33 @@ public abstract class JFFlex extends JFComponent {
      */
     public JFFlex crossAxisAlignment(CrossAxisAlignment caa) {
         this.caa = caa;
+        return this;
+    }
+
+    /**
+     * Adds the specified child components to this JFRow instance.
+     * JFRow arranges its child components in a horizontal layout.
+     * <br>
+     * Any attempt to add a JFCenter instance as a child will result in
+     * an IllegalArgumentException, since JFCenter is not a valid child
+     * component for JFRow.
+     *
+     * @param children the array of JFComponent objects to be added as
+     *                 children to this JFRow. Each child is validated and
+     *                 added to the layout. If a child of type JFCenter is
+     *                 encountered, an exception is thrown.
+     *
+     * @throws IllegalArgumentException if any child in the provided array
+     *                                  is an instance of JFCenter.
+     */
+    protected JFFlex addChilds(@NotNull JFComponent... children) {
+        for (JFComponent child : children) {
+
+            if (child.getClass() == JFCenter.class)
+                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a " + this.getClass().getSimpleName());
+
+            super.addChild(child);
+        }
         return this;
     }
 

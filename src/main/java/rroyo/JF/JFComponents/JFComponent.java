@@ -27,7 +27,7 @@ public abstract class JFComponent {
      * This variable helps establish the structural hierarchy of {@code JFComponent}
      * objects in the graphical framework.
      */
-    public JFComponent parent;
+    protected JFComponent parent;
 
     /**
      * An array containing the child components of this {@code JFComponent}.
@@ -57,7 +57,7 @@ public abstract class JFComponent {
      * This variable is expected to be initialized and updated as necessary to
      * accurately represent the component's current geometric bounds.
      */
-    public final Rectangle componentBox = new Rectangle(0, 0, 0, 0);
+    protected final Rectangle componentBox = new Rectangle(0, 0, 0, 0);
 
     private boolean layoutDirty = true;
 

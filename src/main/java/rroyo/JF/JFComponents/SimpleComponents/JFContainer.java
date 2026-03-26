@@ -55,7 +55,7 @@ public class JFContainer extends JFComponent {
      * @param decoration the decoration for this container, which may include visual elements such as borders
      *                   or background color. If null, no decoration will be applied.
      */
-    public JFContainer(int width, int height, @Nullable Decoration decoration) {
+    public JFContainer(int width, int height, @NotNull Decoration decoration) {
         setSize(width, height);
         this.decoration = decoration;
     }

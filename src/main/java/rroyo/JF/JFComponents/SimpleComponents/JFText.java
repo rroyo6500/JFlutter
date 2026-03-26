@@ -72,6 +72,7 @@ public class JFText extends JFComponent {
      */
     public JFText setText(String text) {
         this.text = text;
+        invalidateLayout();
         return this;
     }
 
@@ -84,6 +85,7 @@ public class JFText extends JFComponent {
      */
     public JFText setFont(Font font) {
         this.font = font;
+        invalidateLayout();
         return this;
     }
 

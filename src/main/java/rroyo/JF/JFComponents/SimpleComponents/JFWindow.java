@@ -164,7 +164,7 @@ public class JFWindow extends JFComponent {
             if (type.isInstance(current)) {
                 return type.cast(current);
             }
-            current = current.parent;
+            current = current.getParent();
         }
 
         return null;
