@@ -12,6 +12,10 @@ public abstract class JFComplexComponent extends JFComponent{
         addChild(content);
     }
 
+    public JFComponent getContent() {
+        return content;
+    }
+
     @Override
     protected void layoutRecalculate() {
         setSize(content.componentBox.width, content.componentBox.height);

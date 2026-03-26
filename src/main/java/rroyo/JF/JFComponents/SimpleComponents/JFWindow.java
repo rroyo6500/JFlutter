@@ -1,6 +1,7 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.JFComponents.JFComponent;
 import rroyo.JF.JFEvents.JFActionEvent;
 import rroyo.JF.JFEvents.JFActionEventSource;
@@ -137,18 +138,18 @@ public class JFWindow extends JFComponent {
     private void dispatchHoverTransition(JFComponent target, int mouseX, int mouseY) {
         if (hoveredComponent != target) {
             if (hoveredComponent instanceof JFHoverEventSource previous) {
-                previous.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, JFHoverEvent.Type.EXIT));
+                previous.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, HoverEventTypes.EXIT));
             }
 
             if (target instanceof JFHoverEventSource next) {
-                next.dispatchHoverEvent(new JFHoverEvent(target, mouseX, mouseY, JFHoverEvent.Type.ENTER));
+                next.dispatchHoverEvent(new JFHoverEvent(target, mouseX, mouseY, HoverEventTypes.ENTER));
             }
         }
 
         hoveredComponent = target;
 
         if (hoveredComponent instanceof JFHoverEventSource current) {
-            current.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, JFHoverEvent.Type.MOVE));
+            current.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, HoverEventTypes.MOVE));
         }
     }
 

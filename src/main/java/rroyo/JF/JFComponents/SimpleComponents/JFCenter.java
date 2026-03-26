@@ -35,7 +35,7 @@ public class JFCenter extends JFComponent {
     @Override
     protected void layoutRecalculate() {
 
-        setSize(parent.componentBox.width, parent.componentBox.height);
+        setSize(parent.getWidth(), parent.getHeight());
 
         if (childList.isEmpty()) return;
 

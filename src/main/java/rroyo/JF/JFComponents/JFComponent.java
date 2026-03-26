@@ -128,6 +128,26 @@ public abstract class JFComponent {
         this.layoutRequireChild = layoutRequireChild;
     }
 
+    public JFComponent getParent() {
+        return parent;
+    }
+
+    public List<JFComponent> getChildList() {
+        return childList;
+    }
+
+    public JFComponent getChild(int index) {
+        return childList.get(index);
+    }
+
+    public int getWidth() {
+        return componentBox.width;
+    }
+
+    public int getHeight() {
+        return componentBox.height;
+    }
+
     /**
      * Initializes the component with the specified parent component.
      * This method sets the parent of the current component, adjusts
@@ -450,4 +470,8 @@ public abstract class JFComponent {
         return containsPoint(x, y) ? this : null;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s{width:%d, height:%d}", this.getClass().getSimpleName(), componentBox.width, componentBox.height);
+    }
 }

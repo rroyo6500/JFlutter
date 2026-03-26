@@ -1,5 +1,6 @@
 package rroyo.JF.JFEvents;
 
+import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.JFComponents.JFComponent;
 
 /**
@@ -7,19 +8,13 @@ import rroyo.JF.JFComponents.JFComponent;
  */
 public class JFHoverEvent {
 
-    public enum Type {
-        ENTER,
-        MOVE,
-        EXIT
-    }
-
     private final JFComponent source;
     private final int mouseX;
     private final int mouseY;
-    private final Type type;
+    private final HoverEventTypes type;
     private final long timestamp;
 
-    public JFHoverEvent(JFComponent source, int mouseX, int mouseY, Type type) {
+    public JFHoverEvent(JFComponent source, int mouseX, int mouseY, HoverEventTypes type) {
         this.source = source;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
@@ -39,7 +34,7 @@ public class JFHoverEvent {
         return mouseY;
     }
 
-    public Type getType() {
+    public HoverEventTypes getType() {
         return type;
     }
 

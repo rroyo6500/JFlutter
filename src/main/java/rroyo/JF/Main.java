@@ -1,6 +1,8 @@
 package rroyo.JF;
 
+import rroyo.JF.Decorations.Border;
 import rroyo.JF.Decorations.Decoration;
+import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.JFComponents.ComplexComponents.JFButton;
 import rroyo.JF.JFComponents.JFComplexComponent;
 import rroyo.JF.JFComponents.JFComponent;
@@ -16,7 +18,9 @@ public class Main {
 
         JFWindow window = new JFWindow(800, 800);
 
-
+        window.addChild(
+            new JFButton(100, 50, "Boton", Color.RED)
+        );
 
     }
 
