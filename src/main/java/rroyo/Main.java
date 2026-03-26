@@ -1,6 +1,9 @@
 package rroyo;
 
+import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.SimpleComponents.*;
+
+import java.awt.*;
 
 public class Main {
 

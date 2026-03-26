@@ -87,7 +87,9 @@ public class JFColumn extends JFFlex {
         int finalHeight = totalChildrenHeight;
         if (parent != null) {
             finalHeight = (parent.componentBox.height > 0)
-                    ? parent.componentBox.height
+                    ? (parent.getClass() == this.getClass())
+                        ? totalChildrenHeight
+                        : parent.componentBox.height
                     : (parent.getClass() == JFCenter.class)
                         ? getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.height
                         : totalChildrenHeight

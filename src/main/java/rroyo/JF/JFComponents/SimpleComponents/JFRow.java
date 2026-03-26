@@ -86,7 +86,9 @@ public class JFRow extends JFFlex {
         int finalWidth = totalChildrenWidth;
         if (parent != null) {
             finalWidth = (parent.componentBox.width > 0)
-                    ? parent.componentBox.width
+                    ? (parent.getClass() == this.getClass())
+                        ? totalChildrenWidth
+                        : parent.componentBox.width
                     : (parent.getClass() == JFCenter.class)
                         ? getComponentFromTree(JFContainer.class, JFSizedBox.class).componentBox.width
                         : totalChildrenWidth
