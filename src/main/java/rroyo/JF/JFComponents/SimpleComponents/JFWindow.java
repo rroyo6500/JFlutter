@@ -31,6 +31,8 @@ public class JFWindow extends JFComponent {
      */
     private Color color = Color.WHITE;
 
+    private JFCanvas canvas;
+
     /**
      * A `JFrame` instance managed by the `JFWindow` class to represent a graphical window
      * component. This window serves as the main container for rendering graphics, managing
@@ -70,6 +72,8 @@ public class JFWindow extends JFComponent {
             JFWindow.this.layout();
             JFWindow.this.validateTree();
             JFWindow.this.draw(g);
+
+            if (canvas != null) canvas.draw(g);
         }
     };
 
@@ -191,11 +195,16 @@ public class JFWindow extends JFComponent {
     }
 
     @Override
-    public JFComponent addChild(@NotNull JFComponent child) {
+    public JFWindow addChild(@NotNull JFComponent child) {
         this.childList.clear();
         hoveredComponent = null;
         super.addChild(child);
         window.repaint();
+        return this;
+    }
+
+    public JFWindow addCanvas(JFCanvas canvas) {
+        this.canvas = canvas;
         return this;
     }
 

@@ -1,16 +1,12 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
+import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.JFComponent;
 
 import java.awt.*;
 
-public abstract class JFCanvas extends JFComponent {
+public abstract class JFCanvas {
 
-    @Override
-    protected void layoutRecalculate() {
+    protected abstract void draw(Graphics g);
 
-    }
-
-    @Override
-    protected abstract void design(Graphics g);
 }
