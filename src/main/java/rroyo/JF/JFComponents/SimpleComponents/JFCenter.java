@@ -41,8 +41,8 @@ public class JFCenter extends JFComponent {
 
         JFComponent child = childList.getFirst();
 
-        int childX = (componentBox.width / 2) - (child.componentBox.width / 2);
-        int childY = (componentBox.height / 2) - (child.componentBox.height / 2);
+        int childX = (getWidth() / 2) - (child.getWidth() / 2);
+        int childY = (getHeight() / 2) - (child.getHeight() / 2);
 
         child.setPosition(childX, childY);
 
