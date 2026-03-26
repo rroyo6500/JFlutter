@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * Defines the contract for components capable of firing action events.
  * Only components implementing this interface can dispatch action callbacks.
+ *
+ * @author rroyo
  */
 public interface JFActionEventSource {
 

@@ -13,6 +13,8 @@ import java.awt.geom.Rectangle2D;
  * the JFComponent class and provides methods to set the text and its styling.
  * This class also handles the layout recalculations and rendering of the
  * text on the screen.
+ *
+ * @author rroyo
  */
 public class JFText extends JFComponent {
 
@@ -125,22 +127,37 @@ public class JFText extends JFComponent {
 
         Rectangle2D bounds = font.getStringBounds(text, frc);
 
-        int width = (int) Math.ceil(bounds.getWidth());
+        int naturalWidth = (int) Math.ceil(bounds.getWidth());
         int height = (int) Math.ceil(bounds.getHeight());
+        FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+        naturalWidth = Math.max(naturalWidth, metrics.stringWidth(text));
+
+        int width = naturalWidth;
+        if (parent != null && parent.getWidth() > 0) {
+            int availableWidth = parent.getWidth();
+            if (!(parent instanceof JFCenter))
+                availableWidth = Math.max(0, parent.getWidth() - localX);
+
+            width = Math.min(naturalWidth, availableWidth);
+        }
 
         setSize(width, height);
     }
 
     @Override
     protected void design(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g.create();
+
         if (backgroundColor != null) {
-            g.setColor(backgroundColor);
-            g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
+            g2d.setColor(backgroundColor);
+            g2d.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
         }
 
-        g.setColor(color);
-        g.setFont(font);
-        g.drawString(text, componentBox.x, componentBox.y + componentBox.height);
+        g2d.setClip(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
+        g2d.setColor(color);
+        g2d.setFont(font);
+        g2d.drawString(text, componentBox.x, componentBox.y + componentBox.height);
+        g2d.dispose();
     }
 
 }

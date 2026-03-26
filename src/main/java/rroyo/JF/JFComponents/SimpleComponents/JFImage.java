@@ -20,6 +20,8 @@ import java.io.IOException;
  * the size of the image as a percentage and to set the background color.
  * <br>
  * The component handles rendering of the image and background color using its design method.
+ *
+ * @author rroyo
  */
 public class JFImage extends JFComponent {
 

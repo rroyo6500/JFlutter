@@ -2,6 +2,8 @@ package rroyo.JF.JFEvents;
 
 /**
  * Receives hover events for components implementing {@link JFHoverEventSource}.
+ *
+ * @author rroyo
  */
 public interface JFHoverListener {
 

@@ -21,6 +21,8 @@ import java.awt.*;
  * adhere to the layout's constraints and configuration. Additionally, visual representation
  * aspects such as drawing and alignment configurations are managed through overridden
  * methods from the superclass, JFFlex.
+ *
+ * @author rroyo
  */
 public class JFColumn extends JFFlex {
 

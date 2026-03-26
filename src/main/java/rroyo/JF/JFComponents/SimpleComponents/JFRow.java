@@ -16,6 +16,8 @@ import java.awt.*;
  * The class supports layout recalculation and rendering, ensuring that child components
  * are aligned correctly based on the main axis and cross axis alignment settings inherited
  * from JFFlex.
+ *
+ * @author rroyo
  */
 public class JFRow extends JFFlex {
 

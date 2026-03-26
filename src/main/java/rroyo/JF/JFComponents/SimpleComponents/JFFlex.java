@@ -11,6 +11,8 @@ import rroyo.JF.JFComponents.JFComponent;
  * JFFlex is designed to be extended to create specific flexbox-style layouts like rows or columns.
  * This class handles the positioning and spacing of child components based on the provided
  * alignment configurations.
+ *
+ * @author rroyo
  */
 public abstract class JFFlex extends JFComponent {
 

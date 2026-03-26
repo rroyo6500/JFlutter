@@ -8,6 +8,8 @@ package rroyo.JF.JFEvents;
  * The primary purpose of implementing this interface is to process
  * user interactions or other events associated with components
  * that fire {@link JFActionEvent} objects.
+ *
+ * @author rroyo
  */
 public interface JFActionListener {
     /**

@@ -1,6 +1,7 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.JFComponents.JFComponent;
 import rroyo.JF.JFEvents.JFActionEvent;
@@ -20,6 +21,8 @@ import java.awt.event.*;
  * <br>
  * The class provides the ability to set background color, repaint the window,
  * and add a single child component while retaining control over layout and rendering.
+ *
+ * @author rroyo
  */
 public class JFWindow extends JFComponent {
 
@@ -31,6 +34,9 @@ public class JFWindow extends JFComponent {
      */
     private Color color = Color.WHITE;
 
+    /**
+     * Optional extra canvas rendered after the component tree.
+     */
     private JFCanvas canvas;
 
     /**
@@ -44,6 +50,9 @@ public class JFWindow extends JFComponent {
      */
     private final JFrame window;
 
+    /**
+     * Component currently considered hovered by pointer tracking.
+     */
     private JFComponent hoveredComponent;
 
     /**
@@ -107,6 +116,9 @@ public class JFWindow extends JFComponent {
         window.setVisible(true);
     }
 
+    /**
+     * Registers mouse listeners used to dispatch action and hover events.
+     */
     private void setupInputListeners() {
         panel.addMouseListener(new MouseAdapter() {
             @Override
@@ -115,7 +127,37 @@ public class JFWindow extends JFComponent {
                 JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
 
                 if (source != null) {
-                    source.dispatchActionEvent(new JFActionEvent((JFComponent) source, "click"));
+                    source.dispatchActionEvent(
+                            new JFActionEvent((JFComponent) source, ActionEventTypes.UP.setButton(e.getButton()))
+                    );
+                }
+
+                repaint();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
+
+                if (source != null) {
+                    source.dispatchActionEvent(
+                            new JFActionEvent((JFComponent) source, ActionEventTypes.DOWN.setButton(e.getButton()))
+                    );
+                }
+
+                repaint();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
+
+                if (source != null) {
+                    source.dispatchActionEvent(
+                            new JFActionEvent((JFComponent) source, ActionEventTypes.CLICK.setButton(e.getButton()))
+                    );
                 }
 
                 repaint();
@@ -139,6 +181,13 @@ public class JFWindow extends JFComponent {
         });
     }
 
+    /**
+     * Emits hover enter/exit/move events based on pointer target transitions.
+     *
+     * @param target component currently under the pointer
+     * @param mouseX pointer x-coordinate in panel coordinates
+     * @param mouseY pointer y-coordinate in panel coordinates
+     */
     private void dispatchHoverTransition(JFComponent target, int mouseX, int mouseY) {
         if (hoveredComponent != target) {
             if (hoveredComponent instanceof JFHoverEventSource previous) {
@@ -157,6 +206,14 @@ public class JFWindow extends JFComponent {
         }
     }
 
+    /**
+     * Resolves the first ancestor (including the start component) implementing the given type.
+     *
+     * @param start starting component in the traversal
+     * @param type expected event source type
+     * @param <T> event source interface type parameter
+     * @return matching event source instance, or {@code null} when none is found
+     */
     private <T> T findEventSource(JFComponent start, Class<T> type) {
         JFComponent current = start;
 
@@ -203,6 +260,12 @@ public class JFWindow extends JFComponent {
         return this;
     }
 
+    /**
+     * Registers an additional custom drawing canvas.
+     *
+     * @param canvas canvas callback rendered after standard component drawing
+     * @return current window instance
+     */
     public JFWindow addCanvas(JFCanvas canvas) {
         this.canvas = canvas;
         return this;

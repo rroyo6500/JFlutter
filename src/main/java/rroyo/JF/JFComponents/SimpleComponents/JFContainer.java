@@ -15,6 +15,8 @@ import java.awt.*;
  * Instances of JFContainer can be customized using their dimensions and optional background color.
  * The container's layout and child components are managed according to the defined layout rules
  * and hierarchy of JFComponent.
+ *
+ * @author rroyo
  */
 public class JFContainer extends JFComponent {
 
@@ -60,8 +62,18 @@ public class JFContainer extends JFComponent {
         this.decoration = decoration;
     }
 
+    /**
+     * Returns the decoration object used to render this container.
+     *
+     * @return container decoration configuration
+     */
     public Decoration getDecoration() {
         return decoration;
+    }
+
+    @Override
+    public JFContainer setSize(int width, int height) {
+        return (JFContainer) super.setSize(width, height);
     }
 
     @Override

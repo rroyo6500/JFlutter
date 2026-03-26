@@ -2,16 +2,51 @@ package rroyo.JF.Decorations;
 
 import java.awt.*;
 
+/**
+ * Immutable shadow style used to render offset drop shadows.
+ *
+ * @param shadowColor shadow base color
+ * @param offsetX horizontal shadow offset
+ * @param offsetY vertical shadow offset
+ * @param blurRadius blur strength in pixels
+ * @author rroyo
+ */
 public record BoxShadow(Color shadowColor, int offsetX, int offsetY, int blurRadius) {
 
+    /**
+     * Creates a shadow without blur.
+     *
+     * @param shadowColor shadow base color
+     * @param offsetX horizontal shadow offset
+     * @param offsetY vertical shadow offset
+     */
     public BoxShadow(Color shadowColor, int offsetX, int offsetY) {
         this(shadowColor, offsetX, offsetY, 0);
     }
 
+    /**
+     * Draws the shadow with square corners.
+     *
+     * @param g graphics context used for rendering
+     * @param x top-left x-coordinate of the target box
+     * @param y top-left y-coordinate of the target box
+     * @param width target box width
+     * @param height target box height
+     */
     public void drawShadow(Graphics g, int x, int y, int width, int height) {
         drawShadow(g, x, y, width, height, 0);
     }
 
+    /**
+     * Draws the shadow with an optional corner radius and blur.
+     *
+     * @param g graphics context used for rendering
+     * @param x top-left x-coordinate of the target box
+     * @param y top-left y-coordinate of the target box
+     * @param width target box width
+     * @param height target box height
+     * @param borderRadius corner radius used to shape the shadow
+     */
     public void drawShadow(Graphics g, int x, int y, int width, int height, int borderRadius) {
         int clampedRadius = Math.max(0, borderRadius);
         boolean useRoundedCorners = clampedRadius > 0;
@@ -74,6 +109,16 @@ public record BoxShadow(Color shadowColor, int offsetX, int offsetY, int blurRad
         }
     }
 
+    /**
+     * Draws a filled rectangle or rounded rectangle according to the requested radius.
+     *
+     * @param g graphics context used for rendering
+     * @param x top-left x-coordinate
+     * @param y top-left y-coordinate
+     * @param width shape width
+     * @param height shape height
+     * @param radius corner radius in pixels
+     */
     private void drawShape(Graphics g, int x, int y, int width, int height, int radius) {
         if (radius > 0) {
             int arc = radius * 2;

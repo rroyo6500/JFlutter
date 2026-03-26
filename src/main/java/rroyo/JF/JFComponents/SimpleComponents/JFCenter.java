@@ -12,6 +12,8 @@ import java.awt.*;
  * a single child component within its parent container. The child
  * component's position is dynamically recalculated based on its dimensions
  * and the dimensions of the parent container.
+ *
+ * @author rroyo
  */
 public class JFCenter extends JFComponent {
 

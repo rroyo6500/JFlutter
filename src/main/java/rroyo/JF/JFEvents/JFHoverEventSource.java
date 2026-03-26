@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Defines the contract for components capable of firing hover events.
+ *
+ * @author rroyo
  */
 public interface JFHoverEventSource {
 

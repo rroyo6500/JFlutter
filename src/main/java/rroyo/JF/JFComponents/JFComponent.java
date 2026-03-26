@@ -6,11 +6,14 @@ import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents an abstract component in a graphical framework.
  * This class provides the foundational structure for creating custom graphical components
  * and managing their relationships within a component hierarchy.
+ *
+ * @author rroyo
  */
 public abstract class JFComponent {
 
@@ -59,8 +62,14 @@ public abstract class JFComponent {
      */
     protected final Rectangle componentBox = new Rectangle(0, 0, 0, 0);
 
+    /**
+     * Indicates whether this component layout must be recalculated.
+     */
     private boolean layoutDirty = true;
 
+    /**
+     * Indicates whether this component requires child layout before its own recalculation.
+     */
     protected boolean layoutRequireChild = false;
 
     /**
@@ -128,22 +137,57 @@ public abstract class JFComponent {
         this.layoutRequireChild = layoutRequireChild;
     }
 
+    /**
+     * Returns the direct parent component in the hierarchy.
+     *
+     * @return parent component, or {@code null} for root components
+     */
     public JFComponent getParent() {
         return parent;
     }
 
+    /**
+     * Returns the list of direct child components.
+     *
+     * @return mutable list containing direct children
+     */
     public List<JFComponent> getChildList() {
         return childList;
     }
 
+    /**
+     * Returns a child component by index.
+     *
+     * @param index zero-based index in the child list
+     * @return child component at the requested index
+     */
     public JFComponent getChild(int index) {
         return childList.get(index);
     }
 
+    /**
+     * Returns the first child component.
+     *
+     * @return first child component
+     */
+    public JFComponent getChild() {
+        return childList.getFirst();
+    }
+
+    /**
+     * Returns the current component width.
+     *
+     * @return width in pixels
+     */
     public int getWidth() {
         return componentBox.width;
     }
 
+    /**
+     * Returns the current component height.
+     *
+     * @return height in pixels
+     */
     public int getHeight() {
         return componentBox.height;
     }
@@ -294,10 +338,12 @@ public abstract class JFComponent {
      * @param child the child component to be added. Must not be null.
      */
     public JFComponent addChild(@NotNull JFComponent child) {
-        if (child.getClass() == JFWindow.class) throw new RuntimeException("Cannot add JFWindow to a JFComponent");
+        JFComponent nonNullChild = Objects.requireNonNull(child, "Cannot add a null child component");
 
-        childList.add(child);
-        child.init(this);
+        if (nonNullChild.getClass() == JFWindow.class) throw new RuntimeException("Cannot add JFWindow to a JFComponent");
+
+        childList.add(nonNullChild);
+        nonNullChild.init(this);
         invalidateLayout();
         return this;
     }

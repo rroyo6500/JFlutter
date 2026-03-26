@@ -1,11 +1,14 @@
 package rroyo.JF.JFEvents;
 
+import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.JFComponents.JFComponent;
 
 /**
  * Represents an action event that originates from a specific component.
  * This class encapsulates the source of the action, a description
  * or identifier of the action, and a timestamp indicating when the event occurred.
+ *
+ * @author rroyo
  */
 public class JFActionEvent {
 
@@ -21,7 +24,7 @@ public class JFActionEvent {
      * or purpose of the action being performed, such as a command or
      * an operation triggered by a user interaction.
      */
-    private final String action;
+    private final ActionEventTypes action;
     /**
      * Represents the timestamp indicating when the action event occurred.
      * This variable stores the time in milliseconds since the Unix epoch
@@ -39,20 +42,35 @@ public class JFActionEvent {
      * @param source The component that triggered this action event. Must not be null.
      * @param action A string representing the description or identifier of the action. Must not be null.
      */
-    public JFActionEvent(JFComponent source, String action) {
+    public JFActionEvent(JFComponent source, ActionEventTypes action) {
         this.source = source;
         this.action = action;
         this.timestamp = System.currentTimeMillis();
     }
 
+    /**
+     * Returns the component that emitted this event.
+     *
+     * @return event source component
+     */
     public JFComponent getSource() {
         return source;
     }
 
-    public String getAction() {
+    /**
+     * Returns the action type associated with this event.
+     *
+     * @return action type
+     */
+    public ActionEventTypes getAction() {
         return action;
     }
 
+    /**
+     * Returns the event creation timestamp in milliseconds.
+     *
+     * @return UNIX timestamp in milliseconds
+     */
     public long getTimestamp() {
         return timestamp;
     }

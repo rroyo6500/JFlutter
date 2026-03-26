@@ -2,12 +2,38 @@ package rroyo.JF.Decorations;
 
 import java.awt.*;
 
+/**
+ * Immutable border style used to draw outlines around rectangular surfaces.
+ *
+ * @param color border color
+ * @param thickness border thickness in pixels
+ * @author rroyo
+ */
 public record Border(Color color, int thickness) {
 
+    /**
+     * Draws the border using square corners.
+     *
+     * @param g graphics context used for rendering
+     * @param x top-left x-coordinate
+     * @param y top-left y-coordinate
+     * @param width border width in pixels
+     * @param height border height in pixels
+     */
     public void drawBorder(Graphics g, int x, int y, int width, int height) {
         drawBorder(g, x, y, width, height, 0);
     }
 
+    /**
+     * Draws the border using an optional rounded corner radius.
+     *
+     * @param g graphics context used for rendering
+     * @param x top-left x-coordinate
+     * @param y top-left y-coordinate
+     * @param width border width in pixels
+     * @param height border height in pixels
+     * @param borderRadius corner radius in pixels
+     */
     public void drawBorder(Graphics g, int x, int y, int width, int height, int borderRadius) {
         g.setColor(color);
         int clampedRadius = Math.max(0, borderRadius);

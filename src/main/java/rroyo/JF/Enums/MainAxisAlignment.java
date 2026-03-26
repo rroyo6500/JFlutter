@@ -1,5 +1,10 @@
 package rroyo.JF.Enums;
 
+/**
+ * Alignment modes used on the main axis in flex layouts.
+ *
+ * @author rroyo
+ */
 public enum MainAxisAlignment {
     DEFAULT,
     START,

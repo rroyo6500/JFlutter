@@ -11,6 +11,8 @@ import java.awt.*;
  * child component, removing any previously added child before adding a new one.
  * This class is typically used to enforce a specific size constraint for the
  * contained component.
+ *
+ * @author rroyo
  */
 public class JFSizedBox extends JFComponent {
 
