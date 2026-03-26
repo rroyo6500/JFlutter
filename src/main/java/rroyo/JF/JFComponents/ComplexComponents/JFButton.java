@@ -23,13 +23,11 @@ public class JFButton extends JFComplexComponent implements JFActionEventSource,
 
     @Override
     public JFButton addActionListener(JFActionListener listener) {
-        JFActionEventSource.super.addActionListener(listener);
-        return this;
+        return (JFButton) JFActionEventSource.super.addActionListener(listener);
     }
 
     @Override
     public JFButton addHoverListener(JFHoverListener listener) {
-        JFHoverEventSource.super.addHoverListener(listener);
-        return this;
+        return (JFButton) JFHoverEventSource.super.addHoverListener(listener);
     }
 }

@@ -37,11 +37,10 @@ public interface JFActionEventSource {
      *
      * @param event event to dispatch
      */
-    default JFComponent dispatchActionEvent(JFActionEvent event) {
+    default void dispatchActionEvent(JFActionEvent event) {
         List<JFActionListener> listeners = new ArrayList<>(JFEventStore.actionListenersFor(this));
         for (JFActionListener listener : listeners) {
             listener.actionPerformed(event);
         }
-        return (JFComponent) this;
     }
 }
