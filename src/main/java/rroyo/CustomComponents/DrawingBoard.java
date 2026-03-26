@@ -3,7 +3,7 @@ package rroyo.CustomComponents;
 import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.MouseButtons;
 import rroyo.JF.JFComponents.JFComponent;
-import rroyo.JF.JFEvents.JFInteractiveEventSource;
+import rroyo.JF.JFEvents.JFInteractiveComponent;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author rroyo
  */
-public class DrawingBoard extends JFComponent implements JFInteractiveEventSource {
+public class DrawingBoard extends JFComponent implements JFInteractiveComponent {
 
     /**
      * Matrix storing the color assigned to each drawable cell.
@@ -23,7 +23,7 @@ public class DrawingBoard extends JFComponent implements JFInteractiveEventSourc
     /**
      * Pixel size used to render each logical cell.
      */
-    private int scale = 1;
+    private final int scale;
 
     /**
      * Initial color used to fill every cell on creation.

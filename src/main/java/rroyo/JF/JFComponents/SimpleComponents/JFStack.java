@@ -1,5 +1,6 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
+import org.jetbrains.annotations.NotNull;
 import rroyo.JF.Enums.Alignment;
 import rroyo.JF.JFComponents.JFComponent;
 
@@ -27,15 +28,26 @@ public class JFStack extends JFComponent {
         this.alignment = alignment;
     }
 
+    public JFStack addChilds(@NotNull JFComponent... children) {
+        for (JFComponent child : children) {
+            super.addChild(child);
+        }
+        return this;
+    }
+
     @Override
     protected void layoutRecalculate() {
         setSize(parent.getWidth(), parent.getHeight());
+
+        if (alignment == Alignment.CUSTOM) return;
+        for (JFComponent child : childList) {
+            int[] position = alignment.calculatePosition(this.componentBox, child.getWidth(), child.getHeight());
+            child.setPosition(position[0], position[1]);
+        }
     }
 
     @Override
     protected void design(Graphics g) {
-
-
 
     }
 }

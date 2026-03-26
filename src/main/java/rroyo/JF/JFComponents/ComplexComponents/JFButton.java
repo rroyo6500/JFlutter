@@ -1,15 +1,13 @@
 package rroyo.JF.JFComponents.ComplexComponents;
 
-import org.jetbrains.annotations.NotNull;
 import rroyo.JF.Decorations.Border;
 import rroyo.JF.Decorations.Decoration;
 import rroyo.JF.JFComponents.JFComplexComponent;
-import rroyo.JF.JFComponents.JFComponent;
 import rroyo.JF.JFComponents.SimpleComponents.JFCenter;
 import rroyo.JF.JFComponents.SimpleComponents.JFContainer;
 import rroyo.JF.JFComponents.SimpleComponents.JFText;
 import rroyo.JF.JFEvents.JFActionListener;
-import rroyo.JF.JFEvents.JFInteractiveEventSource;
+import rroyo.JF.JFEvents.JFInteractiveComponent;
 import rroyo.JF.JFEvents.JFHoverListener;
 
 import java.awt.*;
@@ -19,7 +17,7 @@ import java.awt.*;
  *
  * @author rroyo
  */
-public class JFButton extends JFComplexComponent implements JFInteractiveEventSource {
+public class JFButton extends JFComplexComponent implements JFInteractiveComponent {
 
     /**
      * Text child displayed inside the button.
@@ -56,12 +54,12 @@ public class JFButton extends JFComplexComponent implements JFInteractiveEventSo
 
     @Override
     public JFButton addActionListener(JFActionListener listener) {
-        return (JFButton) JFInteractiveEventSource.super.addActionListener(listener);
+        return (JFButton) JFInteractiveComponent.super.addActionListener(listener);
     }
 
     @Override
     public JFButton addHoverListener(JFHoverListener listener) {
-        return (JFButton) JFInteractiveEventSource.super.addHoverListener(listener);
+        return (JFButton) JFInteractiveComponent.super.addHoverListener(listener);
     }
 
 }

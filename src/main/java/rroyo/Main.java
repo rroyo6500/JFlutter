@@ -25,7 +25,16 @@ public class Main {
 
         JFWindow window = new JFWindow(800, 800);
 
-
+        window.addChild(
+                new JFRow(
+                        new JFContainer(100, 600, Color.lightGray),
+                        new JFSizedBox(600, 600).addChild(
+                                new JFStack(Alignment.TOP).addChilds(
+                                        new JFContainer(100, 100, Color.RED)
+                                )
+                        )
+                )
+        );
 
     }
 

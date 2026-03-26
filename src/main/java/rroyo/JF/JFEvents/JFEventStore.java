@@ -16,13 +16,13 @@ final class JFEventStore {
     /**
      * Listener registry for action event sources.
      */
-    static final Map<JFActionEventSource, List<JFActionListener>> ACTION_LISTENERS =
+    static final Map<JFActionComponent, List<JFActionListener>> ACTION_LISTENERS =
             Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
      * Listener registry for hover event sources.
      */
-    static final Map<JFHoverEventSource, List<JFHoverListener>> HOVER_LISTENERS =
+    static final Map<JFHoverComponent, List<JFHoverListener>> HOVER_LISTENERS =
             Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
@@ -37,7 +37,7 @@ final class JFEventStore {
      * @param source action event source key
      * @return mutable listener list bound to the source
      */
-    static List<JFActionListener> actionListenersFor(JFActionEventSource source) {
+    static List<JFActionListener> actionListenersFor(JFActionComponent source) {
         return ACTION_LISTENERS.computeIfAbsent(source, ignored -> new ArrayList<>());
     }
 
@@ -47,7 +47,7 @@ final class JFEventStore {
      * @param source hover event source key
      * @return mutable listener list bound to the source
      */
-    static List<JFHoverListener> hoverListenersFor(JFHoverEventSource source) {
+    static List<JFHoverListener> hoverListenersFor(JFHoverComponent source) {
         return HOVER_LISTENERS.computeIfAbsent(source, ignored -> new ArrayList<>());
     }
 }

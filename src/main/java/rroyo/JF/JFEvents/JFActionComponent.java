@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author rroyo
  */
-public interface JFActionEventSource {
+public interface JFActionComponent {
 
     /**
      * Registers a new action listener.

@@ -1,7 +1,7 @@
 package rroyo.JF.JFEvents;
 
 /**
- * Receives hover events for components implementing {@link JFHoverEventSource}.
+ * Receives hover events for components implementing {@link JFHoverComponent}.
  *
  * @author rroyo
  */

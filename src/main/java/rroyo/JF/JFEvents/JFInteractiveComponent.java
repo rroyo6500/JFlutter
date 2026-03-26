@@ -5,6 +5,6 @@ package rroyo.JF.JFEvents;
  *
  * @author rroyo
  */
-public interface JFInteractiveEventSource extends JFActionEventSource, JFHoverEventSource {
+public interface JFInteractiveComponent extends JFActionComponent, JFHoverComponent {
 
 }

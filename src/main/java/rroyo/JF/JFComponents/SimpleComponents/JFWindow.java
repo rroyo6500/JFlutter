@@ -5,9 +5,9 @@ import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.JFComponents.JFComponent;
 import rroyo.JF.JFEvents.JFActionEvent;
-import rroyo.JF.JFEvents.JFActionEventSource;
+import rroyo.JF.JFEvents.JFActionComponent;
 import rroyo.JF.JFEvents.JFHoverEvent;
-import rroyo.JF.JFEvents.JFHoverEventSource;
+import rroyo.JF.JFEvents.JFHoverComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -124,7 +124,7 @@ public class JFWindow extends JFComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
-                JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
+                JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
                     source.dispatchActionEvent(
@@ -138,7 +138,7 @@ public class JFWindow extends JFComponent {
             @Override
             public void mousePressed(MouseEvent e) {
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
-                JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
+                JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
                     source.dispatchActionEvent(
@@ -152,7 +152,7 @@ public class JFWindow extends JFComponent {
             @Override
             public void mouseClicked(MouseEvent e) {
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
-                JFActionEventSource source = findEventSource(target, JFActionEventSource.class);
+                JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
                     source.dispatchActionEvent(
@@ -174,7 +174,7 @@ public class JFWindow extends JFComponent {
             @Override
             public void mouseMoved(MouseEvent e) {
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
-                JFHoverEventSource source = findEventSource(target, JFHoverEventSource.class);
+                JFHoverComponent source = findEventSource(target, JFHoverComponent.class);
                 dispatchHoverTransition((JFComponent) source, e.getX(), e.getY());
                 repaint();
             }
@@ -190,18 +190,18 @@ public class JFWindow extends JFComponent {
      */
     private void dispatchHoverTransition(JFComponent target, int mouseX, int mouseY) {
         if (hoveredComponent != target) {
-            if (hoveredComponent instanceof JFHoverEventSource previous) {
+            if (hoveredComponent instanceof JFHoverComponent previous) {
                 previous.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, HoverEventTypes.EXIT));
             }
 
-            if (target instanceof JFHoverEventSource next) {
+            if (target instanceof JFHoverComponent next) {
                 next.dispatchHoverEvent(new JFHoverEvent(target, mouseX, mouseY, HoverEventTypes.ENTER));
             }
         }
 
         hoveredComponent = target;
 
-        if (hoveredComponent instanceof JFHoverEventSource current) {
+        if (hoveredComponent instanceof JFHoverComponent current) {
             current.dispatchHoverEvent(new JFHoverEvent(hoveredComponent, mouseX, mouseY, HoverEventTypes.MOVE));
         }
     }

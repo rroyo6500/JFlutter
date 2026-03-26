@@ -137,6 +137,10 @@ public abstract class JFComponent {
         this.layoutRequireChild = layoutRequireChild;
     }
 
+    protected Rectangle getComponentBox() {
+        return componentBox;
+    }
+
     /**
      * Returns the direct parent component in the hierarchy.
      *

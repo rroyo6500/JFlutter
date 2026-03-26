@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author rroyo
  */
-public interface JFHoverEventSource {
+public interface JFHoverComponent {
 
     /**
      * Registers a new hover listener.
