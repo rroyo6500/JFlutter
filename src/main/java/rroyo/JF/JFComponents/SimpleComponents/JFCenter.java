@@ -1,6 +1,7 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import rroyo.JF.Enums.Alignment;
 import rroyo.JF.Enums.CrossAxisAlignment;
 import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.JFComponent;
@@ -36,17 +37,17 @@ public class JFCenter extends JFComponent {
 
     @Override
     protected void layoutRecalculate() {
-
-        setSize(parent.getWidth(), parent.getHeight());
-
         if (childList.isEmpty()) return;
-
         JFComponent child = childList.getFirst();
 
-        int childX = (getWidth() / 2) - (child.getWidth() / 2);
-        int childY = (getHeight() / 2) - (child.getHeight() / 2);
+        if (parent.getWidth() != 0 && parent.getHeight() != 0)
+            setSize(parent.getWidth(), parent.getHeight());
+        else
+            setSize(child.getWidth(), child.getHeight());
 
-        child.setPosition(childX, childY);
+        int[] position = Alignment.CENTER.calculatePosition(componentBox, child.getWidth(), child.getHeight());
+
+        child.setPosition(position[0], position[1]);
 
         if (child.getClass() == JFRow.class || child.getClass() == JFColumn.class) {
             JFFlex flex = (JFFlex) child;

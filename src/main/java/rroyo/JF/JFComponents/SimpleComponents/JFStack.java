@@ -37,7 +37,17 @@ public class JFStack extends JFComponent {
 
     @Override
     protected void layoutRecalculate() {
-        setSize(parent.getWidth(), parent.getHeight());
+        if (parent.getWidth() != 0 && parent.getHeight() != 0)
+            setSize(parent.getWidth(), parent.getHeight());
+        else {
+            int maxWidth = 0;
+            int maxHeight = 0;
+            for (JFComponent child : childList) {
+                maxWidth = Math.max(maxWidth, child.getWidth());
+                maxHeight = Math.max(maxHeight, child.getHeight());
+            }
+            setSize(maxWidth, maxHeight);
+        }
 
         if (alignment == Alignment.CUSTOM) return;
         for (JFComponent child : childList) {
