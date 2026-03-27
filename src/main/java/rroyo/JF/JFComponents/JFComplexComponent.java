@@ -16,6 +16,8 @@ public abstract class JFComplexComponent extends JFComponent{
      */
     private JFComponent content;
 
+    public JFComplexComponent() {}
+
     /**
      * Creates a complex component using default layout behavior.
      *
