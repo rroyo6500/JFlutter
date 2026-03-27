@@ -22,7 +22,7 @@ public abstract class JFComplexComponent extends JFComponent{
      * @param contentFactory supplier used to instantiate wrapped content
      */
     protected JFComplexComponent(Supplier<JFComponent> contentFactory) {
-        this(contentFactory, false);
+        this(contentFactory, true);
     }
 
     /**
@@ -48,7 +48,7 @@ public abstract class JFComplexComponent extends JFComponent{
 
     @Override
     protected void layoutRecalculate() {
-        setSize(content.componentBox.width, content.componentBox.height);
+        setSize(getContent().getWidth(), getContent().getHeight());
         content.setPosition(0, 0);
     }
 

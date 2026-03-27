@@ -62,17 +62,15 @@ public class DrawingBoard extends JFComponent implements JFInteractiveComponent 
         this.currentColor = currentColor;
         this.defaultColor = defaultColor;
         this.addActionListener(e -> {
-            if (e.getAction() == ActionEventTypes.DOWN && e.getAction().getButton() == MouseButtons.LEFT)
-                isDrawing = true;
-            else if (e.getAction() == ActionEventTypes.UP && e.getAction().getButton() == MouseButtons.RIGHT)
-                isDrawing = false;
+            if (e.getAction() == ActionEventTypes.UP)
+                isDrawing = !isDrawing;
         });
         this.addHoverListener(e -> {
             if (isDrawing) {
-                int x = e.getMouseX()/scale;
-                int y = e.getMouseY()/scale;
+                int x = (e.getMouseX() - getComponentBox().x) / scale;
+                int y = (e.getMouseY() - getComponentBox().y) / scale;
 
-                grid.get(y).set(x, currentColor);
+                grid.get(y).set(x, this.currentColor);
             }
         });
     }
@@ -95,6 +93,10 @@ public class DrawingBoard extends JFComponent implements JFInteractiveComponent 
         this.currentColor = currentColor;
     }
 
+    public Color getDefaultColor() {
+        return defaultColor;
+    }
+
     @Override
     protected void layoutRecalculate() {
         setSize(parent.getWidth(), parent.getHeight());
@@ -111,15 +113,15 @@ public class DrawingBoard extends JFComponent implements JFInteractiveComponent 
     @Override
     protected void design(Graphics g) {
 
-        int x = 0;
-        int y = 0;
+        int x = componentBox.x;
+        int y = componentBox.y;
         for (List<Color> row : grid) {
             for (Color color : row) {
                 g.setColor(color);
                 g.fillRect(x, y, scale, scale);
                 x+=scale;
             }
-            x = 0;
+            x = componentBox.x;
             y+=scale;
         }
 

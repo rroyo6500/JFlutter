@@ -1,5 +1,6 @@
 package rroyo;
 
+import rroyo.CustomComponents.ColorButton;
 import rroyo.CustomComponents.DrawingBoard;
 import rroyo.JF.JFComponents.SimpleComponents.*;
 import rroyo.JF.JFComponents.ComplexComponents.*;
@@ -25,67 +26,28 @@ public class Main {
 
         JFWindow window = new JFWindow(800, 800);
 
-        window.addChild(
+        DrawingBoard db = new DrawingBoard(5, Color.white);
 
-                new JFRow(
-                        new JFColumn(
-                                new JFSizedStack(Alignment.CUSTOM, 400, 400,
-                                        new JFSizedStack(Alignment.RIGHT, 400, 400,
-                                                new JFContainer(100, 100, Color.red)
-                                        ),
-                                        new JFSizedStack(Alignment.BOTTOM, 400, 400,
-                                                new JFContainer(100, 100, Color.red)
-                                        ),
-                                        new JFSizedStack(Alignment.CENTER, 400, 400,
-                                                new JFContainer(100, 100, Color.red)
-                                        )
-                                ),
-                                new JFSizedStack(Alignment.CUSTOM, 400, 400,
-                                        new JFSizedStack(Alignment.RIGHT, 400, 400,
-                                                new JFContainer(100, 100, Color.cyan)
-                                        ),
-                                        new JFSizedStack(Alignment.TOP, 400, 400,
-                                                new JFContainer(100, 100, Color.cyan)
-                                        ),
-                                        new JFSizedStack(Alignment.CENTER, 400, 400,
-                                                new JFContainer(100, 100, Color.cyan)
-                                        )
-                                )
+        window.addChild(
+                new JFColumn(
+                        new JFContainer(800, 50, Color.lightGray).addChild(
+                                new JFRow(
+                                        new ColorButton(db, Color.red),
+                                        new ColorButton(db, Color.blue),
+                                        new ColorButton(db, Color.cyan),
+                                        new ColorButton(db, Color.green),
+                                        new ColorButton(db, Color.yellow),
+                                        new ColorButton(db, Color.orange),
+                                        new ColorButton(db, Color.magenta),
+                                        new ColorButton(db, Color.black),
+                                        new ColorButton(db, db.getDefaultColor())
+                                ).mainAxisAlignment(MainAxisAlignment.CENTER)
                         ),
-                        new JFColumn(
-                                new JFSizedStack(Alignment.CUSTOM, 400, 400,
-                                        new JFSizedStack(Alignment.LEFT, 400, 400,
-                                                new JFContainer(100, 100, Color.green)
-                                        ),
-                                        new JFSizedStack(Alignment.BOTTOM, 400, 400,
-                                                new JFContainer(100, 100, Color.green)
-                                        ),
-                                        new JFSizedStack(Alignment.CENTER, 400, 400,
-                                                new JFContainer(100, 100, Color.green)
-                                        )
-                                ),
-                                new JFSizedStack(Alignment.CUSTOM, 400, 400,
-                                        new JFSizedStack(Alignment.LEFT, 400, 400,
-                                                new JFContainer(100, 100, Color.orange)
-                                        ),
-                                        new JFSizedStack(Alignment.TOP, 400, 400,
-                                                new JFContainer(100, 100, Color.orange)
-                                        ),
-                                        new JFSizedStack(Alignment.CENTER, 400, 400,
-                                                new JFContainer(100, 100, Color.orange)
-                                        )
-                                )
+                        new JFSizedBox(800, 750).addChild(
+                                db
                         )
                 )
-
-        ).addCanvas(new JFCanvas() {
-            @Override
-            protected void draw(Graphics g) {
-                //g.setColor(Color.MAGENTA);
-                //g.fillRect(window.getWidth()/2, 0, 2, window.getHeight());
-                //g.fillRect(0, window.getHeight()/2, window.getWidth(), 2);
-            }
-        });
+        );
 
     }
 

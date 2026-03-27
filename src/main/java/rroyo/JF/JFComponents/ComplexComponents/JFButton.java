@@ -5,6 +5,7 @@ import rroyo.JF.Decorations.Decoration;
 import rroyo.JF.JFComponents.JFComplexComponent;
 import rroyo.JF.JFComponents.SimpleComponents.JFCenter;
 import rroyo.JF.JFComponents.SimpleComponents.JFContainer;
+import rroyo.JF.JFComponents.SimpleComponents.JFSizedBox;
 import rroyo.JF.JFComponents.SimpleComponents.JFText;
 import rroyo.JF.JFEvents.JFActionListener;
 import rroyo.JF.JFEvents.JFInteractiveComponent;
@@ -34,11 +35,14 @@ public class JFButton extends JFComplexComponent implements JFInteractiveCompone
      */
     public JFButton(int width, int height, JFText text, Color color) {
         super(() ->
-                new JFContainer(width, height,
-                        new Decoration(color)
-                                .setBorder(new Border(Color.black, 2))
-                                .setBorderRadius(10)
-                ).addChild(new JFCenter(text))
+                {
+                    if (text == null || color == null) return new JFSizedBox(0, 0);
+                    return new JFContainer(width, height,
+                            new Decoration(color)
+                                    .setBorder(new Border(Color.black, 2))
+                                    .setBorderRadius(10)
+                    ).addChild(new JFCenter(text));
+                }
         );
         this.text = text;
     }
