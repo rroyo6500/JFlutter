@@ -3,74 +3,46 @@ package rroyo.JF.JFComponents.SimpleComponents;
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.Enums.CrossAxisAlignment;
 import rroyo.JF.Enums.MainAxisAlignment;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
 
 /**
- * Represents an abstract base class for flexible layout components,
- * allowing customizable main axis and cross axis alignments.
- * JFFlex is designed to be extended to create specific flexbox-style layouts like rows or columns.
- * This class handles the positioning and spacing of child components based on the provided
- * alignment configurations.
+ * Abstract base class for row- and column-style flex layouts.
+ * <p>
+ * {@code JFFlex} centralizes the configuration and helper logic shared by the concrete
+ * horizontal and vertical flex containers. It stores the main-axis and cross-axis alignment
+ * settings and provides reusable calculations for child distribution along the main axis.
  *
  * @author rroyo
  */
-public abstract class JFFlex extends JFComponent {
+public abstract class JFFlex extends JFComponent implements JFMultiChildComponent<JFFlex> {
 
     /**
-     * Defines the main axis alignment for the layout in the enclosing `JFFlex` class.
-     * The `mainAxisAlignment` property determines how child components are arranged
-     * along the main axis of the container (e.g., horizontally in a row or vertically in a column).
-     * <br>
-     * Default value is `MainAxisAlignment.DEFAULT`, which relies on the default alignment
-     * behavior of the layout.
-     * <br>
-     * Possible values: <br>
-     * - `DEFAULT`: Default alignment as defined by the layout. <br>
-     * - `START`: Aligns children to the start of the main axis. <br>
-     * - `CENTER`: Aligns children at the center of the main axis. <br>
-     * - `END`: Aligns children to the end of the main axis. <br>
-     * - `SPACE_BETWEEN`: Distributes children with space between them. <br>
-     * - `SPACE_AROUND`: Distributes children with equal space around them. <br>
-     * - `SPACE_EVENLY`: Distributes children with equal space between and around them. <br>
+     * Alignment strategy used on the main axis of the layout.
+     * <p>
+     * For rows the main axis is horizontal, and for columns it is vertical.
      */
     protected MainAxisAlignment maa = MainAxisAlignment.DEFAULT;
 
     /**
-     * Represents the cross-axis alignment for a layout. The cross-axis determines
-     * how components are vertically aligned within a container when the primary layout
-     * direction is horizontal, or horizontally aligned when the primary layout direction is vertical.
-     * <br>
-     * The alignment is specified as an instance of the {@code CrossAxisAlignment} enum,
-     * which provides the following options: <br>
-     * - {@code DEFAULT}: Uses the default alignment behavior of the container. <br>
-     * - {@code START}: Aligns children at the start of the cross-axis. <br>
-     * - {@code CENTER}: Centers children along the cross-axis. <br>
-     * - {@code END}: Aligns children at the end of the cross-axis. <br>
-     * <br>
-     * The default value is {@code CrossAxisAlignment.DEFAULT}.
+     * Alignment strategy used on the cross axis of the layout.
+     * <p>
+     * For rows the cross axis is vertical, and for columns it is horizontal.
      */
     protected CrossAxisAlignment caa = CrossAxisAlignment.DEFAULT;
 
     /**
-     * Constructs a new instance of the JFFlex class. This constructor initializes the object
-     * as a flexible layout container, enabling the management of child components' alignment
-     * and spacing based on the flexbox-inspired system.
-     * <br>
-     * The superclass constructor is called with a parameter set to true, indicating that this
-     * layout component requires at least one child component for its layout computation.
+     * Creates a flex container whose layout depends on child sizes.
      */
     public JFFlex() {
         super(true);
     }
 
     /**
-     * Sets the main axis alignment for the layout. The main axis alignment determines how
-     * children are aligned along the main axis of the container.
+     * Sets how free space is handled on the main axis.
      *
-     * @param maa The desired main axis alignment, represented as an instance of MainAxisAlignment.
-     *            This can be one of the following values:
-     *            DEFAULT, START, CENTER, END, SPACE_BETWEEN, SPACE_AROUND, SPACE_EVENLY.
-     * @return The current JFFlex instance, allowing method chaining.
+     * @param maa main-axis alignment strategy
+     * @return current flex container for fluent configuration
      */
     public JFFlex mainAxisAlignment(MainAxisAlignment maa) {
         this.maa = maa;
@@ -78,12 +50,10 @@ public abstract class JFFlex extends JFComponent {
     }
 
     /**
-     * Sets the cross axis alignment for the layout. The cross axis alignment determines how
-     * children are aligned along the cross axis of the container.
+     * Sets how children are aligned on the cross axis.
      *
-     * @param caa The desired cross axis alignment, represented as an instance of CrossAxisAlignment.
-     *            This can be one of the following values: DEFAULT, START, CENTER, END.
-     * @return The current JFFlex instance, allowing method chaining.
+     * @param caa cross-axis alignment strategy
+     * @return current flex container for fluent configuration
      */
     public JFFlex crossAxisAlignment(CrossAxisAlignment caa) {
         this.caa = caa;
@@ -91,41 +61,37 @@ public abstract class JFFlex extends JFComponent {
     }
 
     /**
-     * Adds the specified child components to this JFRow instance.
-     * JFRow arranges its child components in a horizontal layout.
-     * <br>
-     * Any attempt to add a JFCenter instance as a child will result in
-     * an IllegalArgumentException, since JFCenter is not a valid child
-     * component for JFRow.
+     * Adds multiple children while enforcing the structural rules of flex containers.
+     * <p>
+     * {@link JFCenter} is intentionally forbidden as a direct child because centering logic would
+     * conflict with the explicit row or column positioning performed by flex layouts.
      *
-     * @param children the array of JFComponent objects to be added as
-     *                 children to this JFRow. Each child is validated and
-     *                 added to the layout. If a child of type JFCenter is
-     *                 encountered, an exception is thrown.
-     *
-     * @throws IllegalArgumentException if any child in the provided array
-     *                                  is an instance of JFCenter.
+     * @param children children to attach in order
+     * @return current flex container
+     * @throws IllegalArgumentException when any child is a {@link JFCenter}
      */
-    protected JFFlex addChilds(@NotNull JFComponent... children) {
+    public JFFlex addChilds(@NotNull JFComponent... children) {
         for (JFComponent child : children) {
 
             if (child.getClass() == JFCenter.class)
                 throw new IllegalArgumentException("Error: Cannot add JFCenter in to a " + this.getClass().getSimpleName());
 
-            super.addChild(child);
+            attachChild(child);
         }
         return this;
     }
 
     /**
-     * Calculates the starting position and gap between child components based on the remaining space
-     * and the number of children, considering the main axis alignment setting.
+     * Calculates the initial offset and inter-child gap for the chosen main-axis alignment.
+     * <p>
+     * The first returned value indicates where the first child should be placed on the main axis.
+     * The second value indicates the spacing that should be inserted after each child. Concrete row
+     * and column implementations use these values to place children on X or Y depending on their
+     * orientation.
      *
-     * @param remainingSpace The amount of space remaining after accounting for the total size of child components.
-     * @param childCount The number of child components to be positioned within the layout.
-     * @return A float array containing two values: <br>
-     *         - The initial starting position (index 0) for positioning the children. <br>
-     *         - The gap (index 1) to be applied between each child component.
+     * @param remainingSpace free space left after subtracting the total size of all children
+     * @param childCount number of children to distribute
+     * @return array containing {@code startOffset} at index 0 and {@code gap} at index 1
      */
     protected float[] calculateFlexChildPositions(int remainingSpace, int childCount) {
         float currentPos = 0;
@@ -139,14 +105,14 @@ public abstract class JFFlex extends JFComponent {
 
                 case SPACE_BETWEEN -> {
                     currentPos = 0;
-                    gap = (childCount > 1) ? (float)remainingSpace / (childCount - 1) : 0;
+                    gap = (childCount > 1) ? (float) remainingSpace / (childCount - 1) : 0;
                 }
                 case SPACE_AROUND -> {
-                    gap = (float)remainingSpace / childCount;
+                    gap = (float) remainingSpace / childCount;
                     currentPos = gap / 2f;
                 }
                 case SPACE_EVENLY -> {
-                    gap = (float)remainingSpace / (childCount + 1);
+                    gap = (float) remainingSpace / (childCount + 1);
                     currentPos = gap;
                 }
             }

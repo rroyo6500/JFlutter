@@ -1,39 +1,25 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 
 import java.awt.*;
 
 /**
- * The JFColumn class represents a vertical column layout container that organizes
- * child components in a sequential, vertical arrangement. It extends the JFFlex
- * class to inherit flexbox functionality such as alignment, spacing, and size
- * management. This class is specifically designed to manage components that are
- * arranged vertically within the layout.
- * <br>
- * JFColumn prohibits the inclusion of {@code JFCenter} instances as child components.
- * Attempts to add a {@code JFCenter} as a child will result in an IllegalArgumentException.
- * The class provides constructors to initialize the column with or without children,
- * and methods for dynamically adding children to the layout.
- * <br>
- * JFColumn ensures child positions and sizes are recalculated dynamically to
- * adhere to the layout's constraints and configuration. Additionally, visual representation
- * aspects such as drawing and alignment configurations are managed through overridden
- * methods from the superclass, JFFlex.
+ * Flex container that arranges children vertically from top to bottom.
+ * <p>
+ * The column is the vertical counterpart of {@link JFRow}. It measures child heights,
+ * computes its own height according to parent context, and then positions children on the
+ * Y axis while optionally aligning them on the X axis.
  *
  * @author rroyo
  */
 public class JFColumn extends JFFlex {
 
     /**
-     * Constructs a new JFColumn with the specified children. This constructor initializes
-     * a vertical column layout containing the provided children components.
+     * Creates a column initialized with the supplied children.
      *
-     * @param children the array of {@link JFComponent} instances to be added as children
-     *                 of this column. All components will be arranged in a vertical sequence.
-     *                 Cannot contain instances of {@code JFCenter}, otherwise an
-     *                 {@link IllegalArgumentException} will be thrown.
+     * @param children children to place from top to bottom
      */
     public JFColumn(@NotNull JFComponent... children) {
         super();
@@ -41,26 +27,33 @@ public class JFColumn extends JFFlex {
     }
 
     /**
-     * Constructs a new instance of JFColumn.
-     * <br>
-     * This default constructor initializes a vertical column layout without any child components.
-     * It extends the functionality of the JFFlex superclass, which provides fundamental methods
-     * for managing flexbox-style layouts. JFColumn organizes its child components along the vertical axis
-     * and adheres to the alignment configurations provided by JFFlex.
+     * Creates an empty column.
      */
     public JFColumn() {
         super();
     }
 
+    /**
+     * Recomputes column size and child positions.
+     * <p>
+     * The column first measures the sum of child heights and the maximum child width. It then
+     * chooses whether to wrap content vertically or stretch to ancestor constraints. Once its
+     * final height is known, it distributes remaining free space according to the configured
+     * main-axis alignment and positions each child.
+     */
     @Override
     protected void layoutRecalculate() {
 
         int totalChildrenHeight = 0;
         int maxChildWidth = 0;
+        int activeChildCount = 0;
 
         for (JFComponent child : childList) {
+            if (!child.isActive()) continue;
+
             totalChildrenHeight += child.getHeight();
             maxChildWidth = Math.max(maxChildWidth, child.getWidth());
+            activeChildCount++;
         }
 
         int finalHeight = totalChildrenHeight;
@@ -71,21 +64,20 @@ public class JFColumn extends JFFlex {
                         : parent.getHeight()
                     : (parent.getClass() == JFCenter.class)
                         ? getComponentFromTree(JFContainer.class, JFSizedBox.class).getHeight()
-                        : totalChildrenHeight
-            ;
+                        : totalChildrenHeight;
         }
 
         setSize(maxChildWidth, finalHeight);
 
         int remainingSpace = componentBox.height - totalChildrenHeight;
-        int childCount = childList.size();
-
-        float[] fChildPos = calculateFlexChildPositions(remainingSpace, childCount);
+        float[] fChildPos = calculateFlexChildPositions(remainingSpace, activeChildCount);
 
         float currentY = fChildPos[0];
         float gap = fChildPos[1];
 
         for (JFComponent child : childList) {
+            if (!child.isActive()) continue;
+
             int childX = switch (caa) {
                 case CENTER -> (componentBox.width - child.getWidth()) / 2;
                 case END -> componentBox.width - child.getWidth();
@@ -98,6 +90,11 @@ public class JFColumn extends JFFlex {
 
     }
 
+    /**
+     * Columns do not paint anything by themselves; they only arrange their children.
+     *
+     * @param g graphics context supplied during the paint pass
+     */
     @Override
     protected void design(Graphics g) {
 

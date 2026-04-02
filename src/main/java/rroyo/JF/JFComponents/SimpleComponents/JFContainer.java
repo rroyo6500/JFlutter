@@ -3,44 +3,33 @@ package rroyo.JF.JFComponents.SimpleComponents;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Decorations.Decoration;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
 
 import java.awt.*;
 
 /**
- * JFContainer is a specialized component that extends the functionality of JFComponent.
- * It serves as a container that can encapsulate other components and provides additional
- * rendering features such as background coloring.
- * <br>
- * Instances of JFContainer can be customized using their dimensions and optional background color.
- * The container's layout and child components are managed according to the defined layout rules
- * and hierarchy of JFComponent.
+ * Fixed-size container that can paint a background, border and shadow through a {@link Decoration}.
+ * <p>
+ * The container is one of the main visual building blocks of the framework. It can wrap a single
+ * child and render a decorated box behind it, which makes it useful for cards, panels, badges and
+ * many other UI elements.
  *
  * @author rroyo
  */
-public class JFContainer extends JFComponent {
+public class JFContainer extends JFComponent implements JFSingleChildComponent<JFContainer> {
 
     /**
-     * Represents the visual decoration of the container, providing customization
-     * options such as background color and border styling. This field defines how
-     * the container's surface is visually rendered and allows inclusion of additional
-     * visual elements to enhance its appearance.
-     * <br>
-     * The decoration may include, but is not limited to, a background color for the
-     * container and an optional border. It is used during rendering to define the
-     * graphical representation of the container.
+     * Decoration responsible for painting the visual surface of the container.
      */
     private final Decoration decoration;
 
     /**
-     * Constructs a new instance of JFContainer with the specified dimensions and an optional background color.
-     * The width and height define the size of the container, while the background color determines the
-     * rendering fill color of the container. If the color is null, no background will be rendered.
+     * Creates a decorated container from width, height and a plain background color.
      *
-     * @param width  the width of the container in pixels.
-     * @param height the height of the container in pixels.
-     * @param color  the optional background color of the container. If null, the container
-     *               will not render a background.
+     * @param width container width in pixels
+     * @param height container height in pixels
+     * @param color optional background color; when {@code null}, no fill is painted
      */
     public JFContainer(int width, int height, @Nullable Color color) {
         setSize(width, height);
@@ -48,14 +37,11 @@ public class JFContainer extends JFComponent {
     }
 
     /**
-     * Constructs a new instance of JFContainer with the specified dimensions and an optional decoration.
-     * This constructor allows setting the width and height of the container and optionally applying a decoration
-     * that can be used to customize the visual appearance of the container.
+     * Creates a container using a fully configured decoration object.
      *
-     * @param width      the width of the container in pixels.
-     * @param height     the height of the container in pixels.
-     * @param decoration the decoration for this container, which may include visual elements such as borders
-     *                   or background color. If null, no decoration will be applied.
+     * @param width container width in pixels
+     * @param height container height in pixels
+     * @param decoration decoration used to render the container surface
      */
     public JFContainer(int width, int height, @NotNull Decoration decoration) {
         setSize(width, height);
@@ -63,31 +49,56 @@ public class JFContainer extends JFComponent {
     }
 
     /**
-     * Returns the decoration object used to render this container.
+     * Returns the decoration currently used to paint the container.
      *
-     * @return container decoration configuration
+     * @return decoration instance associated with the container
      */
     public Decoration getDecoration() {
         return decoration;
     }
 
+    /**
+     * Narrows the return type of {@link JFComponent#setSize(int, int)} for fluent use.
+     *
+     * @param width new width in pixels
+     * @param height new height in pixels
+     * @return current container
+     */
     @Override
     public JFContainer setSize(int width, int height) {
         return (JFContainer) super.setSize(width, height);
     }
 
+    /**
+     * Replaces any previous child so the container behaves as a single-child box.
+     *
+     * @param child child component to mount inside the container
+     * @return current container
+     */
     @Override
     public JFContainer addChild(@NotNull JFComponent child) {
-        childList.clear();
-        super.addChild(child);
+        clearChildren();
+        attachChild(child);
         return this;
     }
 
+    /**
+     * The container uses the fixed size supplied at construction time, so it performs no extra
+     * layout calculations of its own.
+     */
     @Override
     protected void layoutRecalculate() {
 
     }
 
+    /**
+     * Paints the configured decoration across the full bounds of the container.
+     * <p>
+     * When the decoration has no background color, a warning is printed because a plain
+     * {@link JFSizedBox} would usually be a more appropriate choice.
+     *
+     * @param g graphics context used for rendering
+     */
     @Override
     protected void design(Graphics g) {
         if (decoration.getColor() == null) {

@@ -1,45 +1,57 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
 
 import java.awt.*;
 
 /**
- * The JFSizedBox class is an extension of the JFComponent class that provides
- * a container with a fixed width and height. It is designed to hold a single
- * child component, removing any previously added child before adding a new one.
- * This class is typically used to enforce a specific size constraint for the
- * contained component.
+ * Minimal fixed-size box that can optionally host a single child.
+ * <p>
+ * The component does not paint anything by itself. Its main purpose is to reserve space or to
+ * impose a fixed-size constraint on a wrapped child.
  *
  * @author rroyo
  */
-public class JFSizedBox extends JFComponent {
+public class JFSizedBox extends JFComponent implements JFSingleChildComponent<JFSizedBox> {
 
     /**
-     * Constructs a JFSizedBox instance with the specified width and height.
-     * This constructor initializes the size of the component by setting its
-     * width and height dimensions using the provided values.
+     * Creates a fixed-size box with the requested dimensions.
      *
-     * @param width  the width of the JFSizedBox, in pixels.
-     * @param height the height of the JFSizedBox, in pixels.
+     * @param width fixed width in pixels
+     * @param height fixed height in pixels
      */
     public JFSizedBox(int width, int height) {
         setSize(width, height);
     }
 
+    /**
+     * Replaces any previous child so the size box behaves as a single-child wrapper.
+     *
+     * @param child child to host inside the fixed-size box
+     * @return current size box
+     */
     @Override
-    public JFComponent addChild(@NotNull JFComponent child) {
-        childList.clear();
-        super.addChild(child);
+    public JFSizedBox addChild(@NotNull JFComponent child) {
+        clearChildren();
+        attachChild(child);
         return this;
     }
 
+    /**
+     * The box keeps the explicit dimensions configured by the caller, so it performs no extra layout.
+     */
     @Override
     protected void layoutRecalculate() {
 
     }
 
+    /**
+     * The size box is visually transparent and only contributes layout constraints.
+     *
+     * @param g graphics context supplied during the paint pass
+     */
     @Override
     protected void design(Graphics g) {
 

@@ -1,7 +1,7 @@
 package rroyo.JF.JFEvents;
 
 import rroyo.JF.Enums.HoverEventTypes;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 
 /**
  * Represents hover interactions for a component.

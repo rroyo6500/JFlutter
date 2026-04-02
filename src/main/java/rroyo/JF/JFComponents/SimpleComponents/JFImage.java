@@ -1,63 +1,41 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 /**
- * The JFImage class represents a visual component for displaying images
- * with optional configuration for size and background color. This class extends JFComponent,
- * enabling integration into a graphical component hierarchy.
- * <br>
- * JFImage provides multiple constructors for initializing the component either from an existing
- * BufferedImage or by specifying an image file path. It also supports methods to customize
- * the size of the image as a percentage and to set the background color.
- * <br>
- * The component handles rendering of the image and background color using its design method.
+ * Visual component that renders a bitmap image inside the component tree.
+ * <p>
+ * The image can be created from an existing {@link BufferedImage} or loaded from disk using a
+ * path. The component supports explicit sizing, proportional resizing by percentage, and an
+ * optional background fill behind the image.
  *
  * @author rroyo
  */
 public class JFImage extends JFComponent {
 
     /**
-     * Represents the image rendered by the {@code JFImage} component.
-     * This field holds the {@code BufferedImage} instance to be displayed,
-     * either loaded from a file or provided directly during initialization.
-     * <br>
-     * The image determines the visual content of the component and is directly
-     * utilized in the rendering process in the {@code design} method.
-     * <br>
-     * This field is immutable and is initialized during object construction.
+     * Image content rendered by the component.
      */
     private final BufferedImage image;
 
     /**
-     * Represents the background color of the {@code JFImage} component.
-     * This field determines the fill color rendered in the component's background area,
-     * visible when the component's size exceeds the dimensions of the displayed image
-     * or when no image is present.
-     * <br>
-     * The background color can be set through the {@code setBackgroundColor} method.
-     * If no background color is specified, the background area is rendered transparent
-     * or with the default color behavior of the graphical component's container.
+     * Optional background color painted before the image itself.
      */
     private Color backgroundColor;
 
     /**
-     * Constructs a new {@code JFImage} instance with the specified dimensions and image content.
-     * This constructor sets the size of the component to the provided width and height,
-     * and initializes the image with the given {@code BufferedImage} instance.
+     * Creates an image component with explicit size using an already loaded image.
      *
-     * @param width  the width of the component, in pixels.
-     * @param height the height of the component, in pixels.
-     * @param image  the {@code BufferedImage} instance to be used as the image content.
-     *               Must not be {@code null}.
+     * @param width target width in pixels
+     * @param height target height in pixels
+     * @param image image content to render
      */
     public JFImage(int width, int height, @NotNull BufferedImage image) {
         super();
@@ -66,14 +44,11 @@ public class JFImage extends JFComponent {
     }
 
     /**
-     * Constructs a new {@code JFImage} instance with the specified dimensions and image content.
-     * This constructor sets the size of the component to the provided width and height,
-     * and initializes the image by loading it from the specified file path.
+     * Creates an image component with explicit size by loading the image from disk.
      *
-     * @param width      the width of the component, in pixels.
-     * @param height     the height of the component, in pixels.
-     * @param imagePath  the file path of the image to be loaded. Must not be {@code null}.
-     *                   If the image cannot be loaded, a {@code RuntimeException} will be thrown.
+     * @param width target width in pixels
+     * @param height target height in pixels
+     * @param imagePath path of the image file to load
      */
     public JFImage(int width, int height, @NotNull String imagePath) {
         super();
@@ -86,12 +61,9 @@ public class JFImage extends JFComponent {
     }
 
     /**
-     * Constructs a new {@code JFImage} instance using the specified {@code BufferedImage}.
-     * This constructor initializes the internal image to the provided {@code BufferedImage}
-     * and sets the size of the component to match the width and height of the image.
+     * Creates an image component sized to the natural dimensions of the supplied image.
      *
-     * @param image the {@code BufferedImage} instance to be used as the image content.
-     *              Must not be {@code null}.
+     * @param image image content to render
      */
     public JFImage(@NotNull BufferedImage image) {
         super();
@@ -100,12 +72,9 @@ public class JFImage extends JFComponent {
     }
 
     /**
-     * Constructs a new {@code JFImage} instance by loading an image from the specified file path.
-     * This constructor initializes the internal image using the file path provided and sets the size
-     * of the component to match the width and height of the loaded image.
-     * If the image cannot be loaded, a {@code RuntimeException} is thrown.
+     * Creates an image component by loading an image from disk and adopting its natural size.
      *
-     * @param imagePath the file path of the image to be loaded. Must not be {@code null}.
+     * @param imagePath path of the image file to load
      */
     public JFImage(@NotNull String imagePath) {
         super();
@@ -118,14 +87,10 @@ public class JFImage extends JFComponent {
     }
 
     /**
-     * Sets the background color for the JFImage instance.
-     * This method allows the background color to be customized and updates the
-     * internal background color field. The method is chainable, returning the
-     * current JFImage instance.
+     * Sets the background fill color painted behind the image.
      *
-     * @param backgroundColor the new background color to be set. Must be a
-     *                        {@code Color} object and not {@code null}.
-     * @return the current {@code JFImage} instance with the updated background color.
+     * @param backgroundColor background color to use
+     * @return current image component
      */
     public JFImage setBackgroundColor(Color backgroundColor) {
         this.backgroundColor = backgroundColor;
@@ -133,13 +98,10 @@ public class JFImage extends JFComponent {
     }
 
     /**
-     * Updates the size of the image based on the specified percentage of its current dimensions.
-     * This method adjusts the width and height of the image proportionally to the given percentage
-     * and resizes the image accordingly. The method is chainable, returning the updated {@code JFImage} instance.
+     * Resizes the component to a percentage of the natural image size.
      *
-     * @param percentage the percentage by which the size of the image will be scaled.
-     *                   Must be an integer value greater than 0.
-     * @return the updated {@code JFImage} instance with the new size.
+     * @param percentage percentage of the original width and height
+     * @return current image component
      */
     public JFImage setSizePercentage(int percentage) {
         int newWidth = image.getWidth() * percentage / 100;
@@ -148,16 +110,19 @@ public class JFImage extends JFComponent {
         return this;
     }
 
-    @Override
-    public JFComponent addChild(@NotNull JFComponent child) {
-        throw new UnsupportedOperationException("JFImage does not support child components");
-    }
-
+    /**
+     * Image size is already explicitly known, so no additional layout work is required.
+     */
     @Override
     protected void layoutRecalculate() {
 
     }
 
+    /**
+     * Paints the optional background and then draws the image stretched to the component bounds.
+     *
+     * @param g graphics context used for rendering
+     */
     @Override
     protected void design(Graphics g) {
         if (backgroundColor != null) {
@@ -165,8 +130,6 @@ public class JFImage extends JFComponent {
             g.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
         }
         g.drawImage(image, componentBox.x, componentBox.y, componentBox.width, componentBox.height, null);
-
-
     }
 
 }

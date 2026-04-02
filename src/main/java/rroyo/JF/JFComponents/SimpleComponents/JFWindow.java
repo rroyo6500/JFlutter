@@ -3,77 +3,77 @@ package rroyo.JF.JFComponents.SimpleComponents;
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.HoverEventTypes;
-import rroyo.JF.JFComponents.JFComponent;
-import rroyo.JF.JFEvents.JFActionEvent;
+import rroyo.JF.Enums.KeyEventTypes;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
 import rroyo.JF.JFEvents.JFActionComponent;
-import rroyo.JF.JFEvents.JFHoverEvent;
+import rroyo.JF.JFEvents.JFActionEvent;
 import rroyo.JF.JFEvents.JFHoverComponent;
+import rroyo.JF.JFEvents.JFHoverEvent;
+import rroyo.JF.JFEvents.JFKeyComponent;
+import rroyo.JF.JFEvents.JFKeyEvent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 /**
- * JFWindow represents a graphical window component that extends JFComponent.
- * This class manages a JFrame instance and allows customization of its visual
- * appearance and behavior. It also handles drawing and layout management
- * through its associated JPanel.
- * <br>
- * The class provides the ability to set background color, repaint the window,
- * and add a single child component while retaining control over layout and rendering.
+ * Root component that hosts a framework component tree inside a Swing window.
+ * <p>
+ * {@code JFWindow} bridges the custom framework with the underlying Swing environment.
+ * It owns the actual {@link JFrame}, performs the top-level paint cycle, tracks hover and
+ * keyboard focus state, and translates raw Swing input events into framework-specific action,
+ * hover and keyboard events.
+ * <p>
+ * Unlike the rest of the components, a window is always the root of a tree and only accepts
+ * a single direct child. Its dimensions define the coordinate space used by all descendants.
  *
  * @author rroyo
  */
-public class JFWindow extends JFComponent {
+public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWindow> {
 
     /**
-     * Represents the background color of the `JFWindow` component.
-     * This color is used to fill the entire drawing area of the window.
-     * The default value is `Color.WHITE`, but it can be updated using the
-     * `setColor(Color color)` method for customizing the appearance.
+     * Background color used to clear the full window surface before drawing children.
      */
     private Color color = Color.WHITE;
 
     /**
-     * Optional extra canvas rendered after the component tree.
+     * Optional post-render canvas used for custom drawing outside the standard component tree.
      */
     private JFCanvas canvas;
 
     /**
-     * A `JFrame` instance managed by the `JFWindow` class to represent a graphical window
-     * component. This window serves as the main container for rendering graphics, managing
-     * layout, and displaying child components.
-     * The `window` variable is initialized during the creation of a `JFWindow` instance
-     * and is configured with specific parameters such as size, default close operation,
-     * and layout settings. It acts as the core element for visual representation in the
-     * `JFWindow` class.
+     * Native Swing frame backing this window.
+     * <p>
+     * The frame is responsible for the actual operating-system window, while the framework
+     * keeps ownership of rendering and input dispatch through the content panel.
      */
     private final JFrame window;
 
     /**
-     * Component currently considered hovered by pointer tracking.
+     * Component currently considered to be under the mouse pointer.
+     * <p>
+     * This cached reference allows the window to emit hover enter and exit transitions only
+     * when the pointer target truly changes.
      */
     private JFComponent hoveredComponent;
 
     /**
-     * The `panel` variable represents a custom `JPanel` used as the main content pane
-     * for rendering and managing layout operations of the `JFWindow` component.
-     * <br>
-     * This panel overrides the `paintComponent` method to integrate the custom rendering
-     * logic of `JFWindow`. During the paint operation, it executes the following:
-     * <br>
-     * - Invokes the `layout` method of the enclosing `JFWindow` instance to perform layout
-     *   operations for the component and its children. <br>
-     * - Validates the structure of the component tree through the `validateTree` method,
-     *   ensuring the integrity and proper configuration of all child components. <br>
-     * - Calls the `draw` method of the enclosing `JFWindow` instance to manage custom
-     *   drawing logic, including the rendering of the current component and its children. <br>
-     *
-     * Being declared `protected` and `final`, the panel is intended to serve as a core
-     * component within the `JFWindow` class while restricting subclass modifications
-     * outside of its usage in this context.
+     * Component that currently owns keyboard focus inside the framework.
+     * <p>
+     * The value is updated whenever the user presses the mouse over a component implementing
+     * {@link JFKeyComponent}. Subsequent keyboard input is routed here until focus changes.
      */
-    protected final JPanel panel = new JPanel(){
+    private JFComponent focusedComponent;
+
+    /**
+     * Custom Swing panel used as the frame content pane.
+     * <p>
+     * The panel delegates the entire visual lifecycle back to the framework. During every paint
+     * call it forces a lazy layout pass, validates the resulting tree, draws the component tree,
+     * and finally lets an optional extra canvas paint over the result.
+     */
+    protected final JPanel panel = new JPanel() {
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -87,17 +87,16 @@ public class JFWindow extends JFComponent {
     };
 
     /**
-     * Constructs a JFWindow instance with the specified width and height.
-     * This constructor initializes a JFrame and configures its size, location,
-     * layout, and default behavior. It also adjusts the internal component
-     * dimensions to account for window insets.
+     * Creates a top-level window with a fixed content size.
+     * <p>
+     * The constructor configures the underlying Swing frame, installs the framework event
+     * bridges, makes the panel focusable so it can receive keyboard input, and finally shows
+     * the window on screen.
      *
-     * @param width  the width of the JFrame in pixels
-     * @param height the height of the JFrame in pixels
+     * @param width width of the window content area in pixels
+     * @param height height of the window content area in pixels
      */
     public JFWindow(int width, int height) {
-        super();
-
         window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(null);
@@ -117,12 +116,17 @@ public class JFWindow extends JFComponent {
     }
 
     /**
-     * Registers mouse listeners used to dispatch action and hover events.
+     * Installs the Swing listeners that translate raw input into framework events.
+     * <p>
+     * Mouse events are converted into action events and also drive focus selection. Pointer
+     * movement is converted into hover lifecycle events. Keyboard callbacks are routed to the
+     * component currently stored in {@link #focusedComponent}.
      */
     private void setupInputListeners() {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
+                panel.requestFocusInWindow();
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
@@ -137,7 +141,9 @@ public class JFWindow extends JFComponent {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                panel.requestFocusInWindow();
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
+                focusedComponent = (JFComponent) findEventSource(target, JFKeyComponent.class);
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
@@ -151,6 +157,7 @@ public class JFWindow extends JFComponent {
 
             @Override
             public void mouseClicked(MouseEvent e) {
+                panel.requestFocusInWindow();
                 JFComponent target = findTopMostAt(e.getX(), e.getY());
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
@@ -179,14 +186,55 @@ public class JFWindow extends JFComponent {
                 repaint();
             }
         });
+
+        panel.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                dispatchKeyEvent(KeyEventTypes.KEY_TYPED, e);
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                dispatchKeyEvent(KeyEventTypes.KEY_PRESSED, e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                dispatchKeyEvent(KeyEventTypes.KEY_RELEASED, e);
+            }
+        });
     }
 
     /**
-     * Emits hover enter/exit/move events based on pointer target transitions.
+     * Dispatches a framework keyboard event to the component that currently owns focus.
+     * <p>
+     * If no focusable component is selected, the event is silently ignored. When a target is
+     * present, the raw AWT event is wrapped into {@link JFKeyEvent} and delivered through the
+     * framework keyboard event API.
      *
-     * @param target component currently under the pointer
-     * @param mouseX pointer x-coordinate in panel coordinates
-     * @param mouseY pointer y-coordinate in panel coordinates
+     * @param type framework-level keyboard event category
+     * @param e raw AWT keyboard event
+     */
+    private void dispatchKeyEvent(KeyEventTypes type, KeyEvent e) {
+        if (!(focusedComponent instanceof JFKeyComponent keyComponent)) {
+            return;
+        }
+
+        keyComponent.dispatchKeyEvent(new JFKeyEvent(focusedComponent, type, e.getKeyCode(), e.getKeyChar(), e));
+        repaint();
+    }
+
+    /**
+     * Updates hover state and emits enter, move and exit events when needed.
+     * <p>
+     * The method compares the last hovered component with the new pointer target. If the target
+     * changed, it first emits an exit event for the previous component and an enter event for the
+     * new one. It then stores the new target and emits a move event for the current hovered
+     * component when appropriate.
+     *
+     * @param target component currently under the pointer, or {@code null} when outside the window
+     * @param mouseX pointer X coordinate in panel space
+     * @param mouseY pointer Y coordinate in panel space
      */
     private void dispatchHoverTransition(JFComponent target, int mouseX, int mouseY) {
         if (hoveredComponent != target) {
@@ -207,12 +255,15 @@ public class JFWindow extends JFComponent {
     }
 
     /**
-     * Resolves the first ancestor (including the start component) implementing the given type.
+     * Walks up the component ancestry chain to find the first node implementing a given event role.
+     * <p>
+     * This allows clicks and hover detection to start from the deepest visual node under the
+     * pointer and then bubble up until an interactive ancestor capable of handling the event is found.
      *
-     * @param start starting component in the traversal
-     * @param type expected event source type
-     * @param <T> event source interface type parameter
-     * @return matching event source instance, or {@code null} when none is found
+     * @param start deepest component initially hit by the pointer
+     * @param type event-role interface expected from the returned object
+     * @param <T> interface type to resolve
+     * @return nearest matching ancestor, or {@code null} when none implements the requested role
      */
     private <T> T findEventSource(JFComponent start, Class<T> type) {
         JFComponent current = start;
@@ -228,54 +279,70 @@ public class JFWindow extends JFComponent {
     }
 
     /**
-     * Repaints the current window by invoking the repaint method of the internal panel.
-     * This method ensures that the window's visual components are refreshed and any
-     * graphical updates are applied.
+     * Requests a redraw of the internal panel.
+     * <p>
+     * Swing will schedule a new paint cycle, during which layout, validation and rendering of
+     * the full component tree will happen again.
      */
     public void repaint() {
         panel.repaint();
     }
 
     /**
-     * Sets the color of this JFWindow instance.
-     * This method updates the internal color field and returns the current instance
-     * to enable method chaining.
+     * Changes the solid background color used by the window.
      *
-     * @param color the Color to be set for this JFWindow. This parameter defines the
-     *              visual color of the window.
-     * @return the current JFWindow instance with the updated color, facilitating
-     *         method chaining for further configurations.
+     * @param color new background color
+     * @return current window for fluent configuration
      */
     public JFWindow setColor(Color color) {
         this.color = color;
         return this;
     }
 
+    /**
+     * Replaces the current root child of the window.
+     * <p>
+     * A window behaves as a single-child root container, so any previous child is removed before
+     * the new child is attached. Hover and focus caches are also cleared because they are no longer
+     * valid for the old tree.
+     *
+     * @param child new root component to mount inside the window
+     * @return current window for fluent composition
+     */
     @Override
     public JFWindow addChild(@NotNull JFComponent child) {
-        this.childList.clear();
+        clearChildren();
         hoveredComponent = null;
-        super.addChild(child);
+        focusedComponent = null;
+        attachChild(child);
         window.repaint();
         return this;
     }
 
     /**
-     * Registers an additional custom drawing canvas.
+     * Registers an extra custom drawing layer rendered after the regular component tree.
      *
-     * @param canvas canvas callback rendered after standard component drawing
-     * @return current window instance
+     * @param canvas canvas callback rendered on top of the component tree
+     * @return current window for fluent configuration
      */
     public JFWindow addCanvas(JFCanvas canvas) {
         this.canvas = canvas;
         return this;
     }
 
+    /**
+     * Window size is fixed at construction time, so no additional layout recalculation is needed.
+     */
     @Override
     protected void layoutRecalculate() {
 
     }
 
+    /**
+     * Paints the window background before any children are rendered.
+     *
+     * @param g graphics context provided by Swing
+     */
     @Override
     protected void design(Graphics g) {
         g.setColor(color);

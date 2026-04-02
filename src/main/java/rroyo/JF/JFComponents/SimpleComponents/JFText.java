@@ -1,76 +1,56 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
-import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 
 /**
- * The JFText class is a UI component that represents a text element
- * with customizable font, text color, and background color. It extends
- * the JFComponent class and provides methods to set the text and its styling.
- * This class also handles the layout recalculations and rendering of the
- * text on the screen.
+ * Text-rendering component with configurable content, font and colors.
+ * <p>
+ * {@code JFText} is a leaf component that measures its own size from the active font metrics
+ * and then draws the text clipped to its bounding box. It can also paint an optional background
+ * behind the text, which is useful when composing labels or badges.
  *
  * @author rroyo
  */
 public class JFText extends JFComponent {
 
     /**
-     * Represents the text content of the JFText component.
-     * This string determines the text to be rendered on screen.
-     * It can be set or updated to change the displayed content
-     * dynamically and is used during layout recalculation and rendering.
+     * Text string currently displayed by the component.
      */
     private String text;
 
     /**
-     * Represents the default font used for rendering text within the JFText component.
-     * The font is initialized with the Arial typeface, a plain style, and a size of 12.
-     *
-     * This font can be customized dynamically using the {@code setFont(Font font)} method
-     * in the JFText class to modify the appearance of the text displayed in the component.
+     * Font used for text measurement and rendering.
      */
     private Font font = new Font("Arial", Font.PLAIN, 12);
 
     /**
-     * Represents the text color used for rendering the text in the {@code JFText} component.
-     * By default, it is initialized to {@code Color.BLACK}, ensuring the text is displayed
-     * in a standard black color. The color can be dynamically updated using the
-     * {@code setColor(Color color)} method to customize the text's appearance.
+     * Foreground color used to draw the text glyphs.
      */
     private Color color = Color.BLACK;
 
     /**
-     * Represents the background color of the {@code JFText} component.
-     * This color is used to fill the background of the component when it is rendered.
-     *
-     * By default, this variable is initialized to {@code null}, meaning no background
-     * color is applied. It can be dynamically updated using the {@code setBackgroundColor(Color backgroundColor)}
-     * method provided by the {@code JFText} class to modify the appearance of the component.
-     *
-     * If the background color is set, it is drawn within the bounds defined by the
-     * component's size during the rendering process.
+     * Optional background color drawn behind the text.
      */
     private Color backgroundColor;
 
     /**
-     * Constructs a JFText instance with the specified text content.
+     * Creates a text component with the supplied initial string.
      *
-     * @param text the string value to be displayed or represented by this JFText instance.
+     * @param text initial text content
      */
     public JFText(String text) {
         this.text = text;
     }
 
     /**
-     * Updates the text content of this JFText instance.
+     * Replaces the displayed text and invalidates layout so the component can be remeasured.
      *
-     * @param text the new text string to be set. This value will replace the
-     *             current text content of the instance.
-     * @return the current JFText instance, allowing for method chaining.
+     * @param text new text content
+     * @return current text component
      */
     public JFText setText(String text) {
         this.text = text;
@@ -78,12 +58,15 @@ public class JFText extends JFComponent {
         return this;
     }
 
+    public String getText() {
+        return text;
+    }
+
     /**
-     * Sets the font for this JFText instance.
+     * Changes the font used for both measurement and rendering.
      *
-     * @param font the Font object to set. This defines the typeface, style, and size
-     *             to be used for displaying the text content of this JFText instance.
-     * @return the current JFText instance, allowing for method chaining.
+     * @param font new font configuration
+     * @return current text component
      */
     public JFText setFont(Font font) {
         this.font = font;
@@ -92,35 +75,34 @@ public class JFText extends JFComponent {
     }
 
     /**
-     * Sets the color for this JFText instance.
+     * Changes the text color.
      *
-     * @param color the Color object to set. This determines the color
-     *              to be used for rendering the text content of this JFText instance.
-     * @return the current JFText instance, allowing for method chaining.
+     * @param color new foreground color
+     * @return current text component
      */
     public JFText setColor(Color color) {
         this.color = color;
         return this;
     }
 
-    @Override
-    public JFComponent addChild(@NotNull JFComponent child) {
-        throw new UnsupportedOperationException("JFText does not support child components");
-    }
-
     /**
-     * Sets the background color for this JFText instance.
-     * This determines the background color of the text component.
+     * Sets the background color drawn underneath the text.
      *
-     * @param backgroundColor the Color object to set as the background color
-     *                        of this JFText instance.
-     * @return the current JFText instance, allowing for method chaining.
+     * @param backgroundColor new background color
+     * @return current text component
      */
     public JFText setBackgroundColor(Color backgroundColor) {
         this.backgroundColor = backgroundColor;
         return this;
     }
 
+    /**
+     * Measures the text using the current font and computes the component bounds.
+     * <p>
+     * The natural text width is calculated from both the font render context and toolkit metrics,
+     * using the maximum of both values for safety. If the parent has a constrained width, the text
+     * box is clipped so it does not exceed the available horizontal space.
+     */
     @Override
     protected void layoutRecalculate() {
         FontRenderContext frc = new FontRenderContext(null, true, true);
@@ -128,11 +110,12 @@ public class JFText extends JFComponent {
         Rectangle2D bounds = font.getStringBounds(text, frc);
 
         int naturalWidth = (int) Math.ceil(bounds.getWidth());
-        int height = (int) Math.ceil(bounds.getHeight());
         FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+        int naturalHeight = Math.max((int) Math.ceil(bounds.getHeight()), metrics.getHeight());
         naturalWidth = Math.max(naturalWidth, metrics.stringWidth(text));
 
         int width = naturalWidth;
+        int height = naturalHeight;
         if (parent != null && parent.getWidth() > 0) {
             int availableWidth = parent.getWidth();
             if (!(parent instanceof JFCenter))
@@ -141,9 +124,22 @@ public class JFText extends JFComponent {
             width = Math.min(naturalWidth, availableWidth);
         }
 
+        if (parent != null && parent.getHeight() > 0) {
+            int availableHeight = parent.getHeight();
+            if (!(parent instanceof JFCenter))
+                availableHeight = Math.max(0, parent.getHeight() - localY);
+
+            height = Math.min(naturalHeight, availableHeight);
+        }
+
         setSize(width, height);
     }
 
+    /**
+     * Paints the optional background and then draws the text clipped to the component bounds.
+     *
+     * @param g graphics context used for rendering
+     */
     @Override
     protected void design(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
@@ -153,10 +149,11 @@ public class JFText extends JFComponent {
             g2d.fillRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
         }
 
+        FontMetrics metrics = g2d.getFontMetrics(font);
         g2d.setClip(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
         g2d.setColor(color);
         g2d.setFont(font);
-        g2d.drawString(text, componentBox.x, componentBox.y + componentBox.height);
+        g2d.drawString(text, componentBox.x, componentBox.y + Math.min(metrics.getAscent(), componentBox.height));
         g2d.dispose();
     }
 
