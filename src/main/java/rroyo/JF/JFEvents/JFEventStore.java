@@ -7,7 +7,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Centralized listener storage used by event source interfaces.
+ * Centralized listener registry used by the framework event interfaces.
+ * <p>
+ * Instead of forcing every component implementation to manage its own listener collections,
+ * the event-capable interfaces delegate that responsibility to this package-private utility.
+ * Weak keys are used so listener maps do not keep components alive after they are no longer
+ * referenced elsewhere in the component tree.
  *
  * @author rroyo
  */
@@ -26,7 +31,13 @@ final class JFEventStore {
             Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
-     * Utility class constructor hidden intentionally.
+     * Listener registry for key event sources.
+     */
+    static final Map<JFKeyComponent, List<JFKeyListener>> KEY_LISTENERS =
+            Collections.synchronizedMap(new WeakHashMap<>());
+
+    /**
+     * Hidden constructor because this type is only a static utility holder.
      */
     private JFEventStore() {
     }
@@ -49,5 +60,15 @@ final class JFEventStore {
      */
     static List<JFHoverListener> hoverListenersFor(JFHoverComponent source) {
         return HOVER_LISTENERS.computeIfAbsent(source, ignored -> new ArrayList<>());
+    }
+
+    /**
+     * Returns the keyboard listener list for a source, creating it when absent.
+     *
+     * @param source key event source key
+     * @return mutable listener list bound to the source
+     */
+    static List<JFKeyListener> keyListenersFor(JFKeyComponent source) {
+        return KEY_LISTENERS.computeIfAbsent(source, ignored -> new ArrayList<>());
     }
 }

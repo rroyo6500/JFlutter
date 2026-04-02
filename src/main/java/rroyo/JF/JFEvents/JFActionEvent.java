@@ -1,7 +1,7 @@
 package rroyo.JF.JFEvents;
 
 import rroyo.JF.Enums.ActionEventTypes;
-import rroyo.JF.JFComponents.JFComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 
 /**
  * Represents an action event that originates from a specific component.

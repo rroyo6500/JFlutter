@@ -1,12 +1,13 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
-import org.jetbrains.annotations.NotNull;
-import rroyo.JF.JFComponents.JFComponent;
-
 import java.awt.*;
 
 /**
- * Lightweight drawing hook that allows custom paint logic over a window surface.
+ * Optional drawing hook rendered directly by a {@link JFWindow} after the component tree.
+ * <p>
+ * A canvas is useful for ad-hoc debug overlays, custom effects, or experiments that do not
+ * naturally fit into the regular component hierarchy but still need access to the window
+ * graphics context.
  *
  * @author rroyo
  */

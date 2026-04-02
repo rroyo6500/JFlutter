@@ -135,7 +135,7 @@ public class Decoration {
      * @param height decoration height
      */
     public void draw(Graphics g, int x, int y, int width, int height) {
-        int clampedRadius = Math.min(borderRadius, Math.max(0, Math.min(width, height) / 2));
+        int clampedRadius = Math.clamp(Math.min(width, height) / 2, 0, borderRadius);
         int arc = clampedRadius * 2;
 
         if (shadow != null)

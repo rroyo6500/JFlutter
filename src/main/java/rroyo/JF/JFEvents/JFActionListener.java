@@ -1,23 +1,19 @@
 package rroyo.JF.JFEvents;
 
 /**
- * This interface defines a contract for handling action events.
- * Classes implementing this interface must provide an implementation
- * for reacting to {@link JFActionEvent} instances when triggered.
- * <br>
- * The primary purpose of implementing this interface is to process
- * user interactions or other events associated with components
- * that fire {@link JFActionEvent} objects.
+ * Functional listener interface used to react to framework action events.
+ * <p>
+ * Components implementing {@link JFActionComponent} can register any number of listeners of
+ * this type. Each listener is invoked whenever the component dispatches a click, press, or
+ * release event represented by {@link JFActionEvent}.
  *
  * @author rroyo
  */
 public interface JFActionListener {
     /**
-     * Invoked when an action event occurs. Classes implementing this method
-     * should define the behavior to handle the provided {@code JFActionEvent}.
+     * Handles a new action event emitted by a component.
      *
-     * @param e the {@code JFActionEvent} containing information about the source,
-     *          action description, and timestamp of the event
+     * @param e event object describing the source component, logical action and dispatch timestamp
      */
     void actionPerformed(JFActionEvent e);
 }

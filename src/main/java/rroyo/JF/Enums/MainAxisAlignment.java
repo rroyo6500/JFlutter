@@ -1,7 +1,11 @@
 package rroyo.JF.Enums;
 
 /**
- * Alignment modes used on the main axis in flex layouts.
+ * Defines how children are distributed along the primary axis of a flex container.
+ * <p>
+ * In a row this axis is horizontal; in a column it is vertical. Besides classic start,
+ * center and end positioning, the enum also provides spacing strategies that distribute
+ * the remaining free space between or around children.
  *
  * @author rroyo
  */
