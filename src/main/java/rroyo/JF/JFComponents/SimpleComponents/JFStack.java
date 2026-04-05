@@ -34,14 +34,27 @@ public class JFStack extends JFComponent implements JFMultiChildComponent<JFStac
     }
 
     /**
+     * Adds a single child to the stack.
+     *
+     * @param child child to layer inside the stack
+     * @return current stack
+     */
+    @Override
+    public JFStack addChild(@NotNull JFComponent child) {
+        attachChild(child);
+        return this;
+    }
+
+    /**
      * Adds multiple children to the stack in the given order.
      *
      * @param children children to layer inside the stack
      * @return current stack
      */
+    @Override
     public JFStack addChilds(@NotNull JFComponent... children) {
         for (JFComponent child : children) {
-            attachChild(child);
+            addChild(child);
         }
         return this;
     }

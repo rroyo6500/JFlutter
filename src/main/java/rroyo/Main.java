@@ -28,9 +28,9 @@ public class Main {
      */
     public static void main(String[] args) {
 
-        JFWindow window = new JFWindow(1000, 1000);
+        JFWindow window = new JFWindow(800, 800, "");
 
-        //
+        window.addChild(new JFContainer(100, 100, Color.red)).setVisible(true);
 
     }
 
@@ -40,7 +40,7 @@ public class Main {
 /*
         DrawingBoard db = new DrawingBoard(5, Color.white);
         JFContainer colorViwer = new JFContainer(500, 50, Color.lightGray);
-        JFContainer DrawIndicator = new JFContainer(500, 50, Color.lightGray);
+        JFContainer drawIndicator = new JFContainer(500, 50, Color.lightGray);
 
         window.addChild(
                 new JFColumn(
@@ -48,7 +48,7 @@ public class Main {
                                 new JFSizedStack(Alignment.CUSTOM, 1000, 50).addChilds(
                                         new JFRow(
                                                 colorViwer,
-                                                DrawIndicator
+                                                drawIndicator
                                         ),
                                         new JFCenter(
                                                 new JFRow(
@@ -70,20 +70,20 @@ public class Main {
         );
         db.addActionListener(e -> {
             if (e.getAction() == ActionEventTypes.UP) {
-                Decoration d = DrawIndicator.getDecoration();
+                Decoration d = drawIndicator.getDecoration();
 
                 if (d.getColor() == Color.lightGray)
-                    DrawIndicator.getDecoration().setColor(db.getCurrentColor());
-                else DrawIndicator.getDecoration().setColor(Color.lightGray);
+                    drawIndicator.getDecoration().setColor(db.getCurrentColor());
+                else drawIndicator.getDecoration().setColor(Color.lightGray);
 
             }
         });
         db.addHoverListener(e -> {
             if (e.getType() == HoverEventTypes.MOVE) {
-                Decoration d = DrawIndicator.getDecoration();
+                Decoration d = drawIndicator.getDecoration();
 
                 if (d.getColor() != Color.lightGray && d.getColor() != db.getCurrentColor())
-                    DrawIndicator.getDecoration().setColor(db.getCurrentColor());
+                    drawIndicator.getDecoration().setColor(db.getCurrentColor());
             }
         });
  */

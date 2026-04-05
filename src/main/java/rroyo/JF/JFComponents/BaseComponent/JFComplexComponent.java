@@ -59,6 +59,16 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
         return content;
     }
 
+    @Override
+    public JFComponent setSize(int width, int height) {
+        super.setSize(width, height);
+
+        if (content != null) {
+            content.setSize(width, height);
+        }
+        return this;
+    }
+
     /**
      * Adopts the size of the wrapped content and anchors it at local position {@code (0, 0)}.
      * <p>
@@ -68,11 +78,11 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
     @Override
     protected void layoutRecalculate() {
         if (content == null || !content.isActive()) {
-            setSize(0, 0);
+            super.setSize(0, 0);
             return;
         }
 
-        setSize(getContent().getWidth(), getContent().getHeight());
+        super.setSize(getContent().getWidth(), getContent().getHeight());
         content.setPosition(0, 0);
     }
 

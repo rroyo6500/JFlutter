@@ -12,10 +12,14 @@ import rroyo.JF.JFEvents.JFHoverComponent;
 import rroyo.JF.JFEvents.JFHoverEvent;
 import rroyo.JF.JFEvents.JFKeyComponent;
 import rroyo.JF.JFEvents.JFKeyEvent;
+import rroyo.JF.JFEvents.JFWheelComponent;
+import rroyo.JF.JFEvents.JFWheelEvent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Root component that hosts a framework component tree inside a Swing window.
@@ -67,6 +71,11 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
     private JFComponent focusedComponent;
 
     /**
+     * Components that should be painted and hit-tested above the regular tree.
+     */
+    private final List<JFComponent> overlayComponents = new ArrayList<>();
+
+    /**
      * Custom Swing panel used as the frame content pane.
      * <p>
      * The panel delegates the entire visual lifecycle back to the framework. During every paint
@@ -82,9 +91,25 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
             JFWindow.this.validateTree();
             JFWindow.this.draw(g);
 
+            for (JFComponent overlayComponent : overlayComponents) {
+                overlayComponent.drawTree(g);
+            }
+
             if (canvas != null) canvas.draw(g);
         }
     };
+
+
+    /**
+     * Creates a top-level window with the default close behavior.
+     *
+     * @param width width of the window content area in pixels
+     * @param height height of the window content area in pixels
+     * @param title native window title
+     */
+    public JFWindow(int width, int height, String title) {
+        this(width, height, title, JFrame.EXIT_ON_CLOSE);
+    }
 
     /**
      * Creates a top-level window with a fixed content size.
@@ -95,10 +120,13 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
      *
      * @param width width of the window content area in pixels
      * @param height height of the window content area in pixels
+     * @param title native window title
+     * @param defaultOperation Swing close operation used by the frame
      */
-    public JFWindow(int width, int height) {
+    public JFWindow(int width, int height, String title, int defaultOperation) {
         window = new JFrame();
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setDefaultCloseOperation(defaultOperation);
+        window.setTitle(title);
         window.setLayout(null);
         window.setResizable(false);
         panel.setPreferredSize(new Dimension(width, height));
@@ -111,8 +139,6 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         panel.setFocusable(true);
         panel.requestFocusInWindow();
         setupInputListeners();
-
-        window.setVisible(true);
     }
 
     /**
@@ -127,12 +153,12 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
             @Override
             public void mouseReleased(MouseEvent e) {
                 panel.requestFocusInWindow();
-                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
                     source.dispatchActionEvent(
-                            new JFActionEvent((JFComponent) source, ActionEventTypes.UP.setButton(e.getButton()))
+                            new JFActionEvent((JFComponent) source, ActionEventTypes.UP.setButton(e.getButton()), e.getX(), e.getY())
                     );
                 }
 
@@ -142,13 +168,13 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
             @Override
             public void mousePressed(MouseEvent e) {
                 panel.requestFocusInWindow();
-                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
                 focusedComponent = (JFComponent) findEventSource(target, JFKeyComponent.class);
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
                     source.dispatchActionEvent(
-                            new JFActionEvent((JFComponent) source, ActionEventTypes.DOWN.setButton(e.getButton()))
+                            new JFActionEvent((JFComponent) source, ActionEventTypes.DOWN.setButton(e.getButton()), e.getX(), e.getY())
                     );
                 }
 
@@ -158,12 +184,12 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
             @Override
             public void mouseClicked(MouseEvent e) {
                 panel.requestFocusInWindow();
-                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
                     source.dispatchActionEvent(
-                            new JFActionEvent((JFComponent) source, ActionEventTypes.CLICK.setButton(e.getButton()))
+                            new JFActionEvent((JFComponent) source, ActionEventTypes.CLICK.setButton(e.getButton()), e.getX(), e.getY())
                     );
                 }
 
@@ -180,11 +206,25 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                JFComponent target = findTopMostAt(e.getX(), e.getY());
+                JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
                 JFHoverComponent source = findEventSource(target, JFHoverComponent.class);
                 dispatchHoverTransition((JFComponent) source, e.getX(), e.getY());
                 repaint();
             }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
+                JFHoverComponent source = findEventSource(target, JFHoverComponent.class);
+                dispatchHoverTransition((JFComponent) source, e.getX(), e.getY());
+                repaint();
+            }
+        });
+
+        panel.addMouseWheelListener(e -> {
+            JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
+            dispatchWheelEvent(target, e);
+            repaint();
         });
 
         panel.addKeyListener(new KeyListener() {
@@ -255,6 +295,25 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
     }
 
     /**
+     * Resolves the topmost component under the pointer, considering overlay components first.
+     *
+     * @param x pointer x-coordinate
+     * @param y pointer y-coordinate
+     * @return deepest component found at the given position, or {@code null} when empty
+     */
+    private JFComponent findTopMostAtWithOverlays(int x, int y) {
+        for (int i = overlayComponents.size() - 1; i >= 0; i--) {
+            JFComponent overlayComponent = overlayComponents.get(i);
+            JFComponent target = overlayComponent.findTopMostAt(x, y);
+            if (target != null) {
+                return target;
+            }
+        }
+
+        return findTopMostAt(x, y);
+    }
+
+    /**
      * Walks up the component ancestry chain to find the first node implementing a given event role.
      * <p>
      * This allows clicks and hover detection to start from the deepest visual node under the
@@ -276,6 +335,34 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         }
 
         return null;
+    }
+
+    /**
+     * Dispatches a wheel event through the component ancestry starting at the deepest hit node.
+     * <p>
+     * Unlike click or hover resolution, wheel input is often expected to bubble through nested
+     * interactive wrappers until a scrollable ancestor handles it, so every ancestor implementing
+     * {@link JFWheelComponent} receives the event.
+     *
+     * @param start deepest component found under the pointer
+     * @param event raw AWT wheel event
+     */
+    private void dispatchWheelEvent(JFComponent start, MouseWheelEvent event) {
+        JFComponent current = start;
+
+        while (current != null) {
+            if (current instanceof JFWheelComponent wheelComponent) {
+                wheelComponent.dispatchWheelEvent(new JFWheelEvent(
+                        current,
+                        event.getX(),
+                        event.getY(),
+                        event.getWheelRotation(),
+                        event.getPreciseWheelRotation(),
+                        event
+                ));
+            }
+            current = current.getParent();
+        }
     }
 
     /**
@@ -314,8 +401,33 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         clearChildren();
         hoveredComponent = null;
         focusedComponent = null;
+        overlayComponents.clear();
         attachChild(child);
         window.repaint();
+        return this;
+    }
+
+    /**
+     * Registers a component so it is painted above the regular component tree.
+     *
+     * @param component overlay root to register
+     * @return current window
+     */
+    public JFWindow registerOverlay(JFComponent component) {
+        if (component != null && !overlayComponents.contains(component)) {
+            overlayComponents.add(component);
+        }
+        return this;
+    }
+
+    /**
+     * Removes a component from the overlay painting layer.
+     *
+     * @param component overlay root to remove
+     * @return current window
+     */
+    public JFWindow unregisterOverlay(JFComponent component) {
+        overlayComponents.remove(component);
         return this;
     }
 
@@ -327,6 +439,28 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
      */
     public JFWindow addCanvas(JFCanvas canvas) {
         this.canvas = canvas;
+        return this;
+    }
+
+    /**
+     * Returns the visibility of the native Swing frame.
+     *
+     * @return {@code true} when the operating-system window is visible
+     */
+    @Override
+    public boolean isVisible() {
+        return window.isVisible();
+    }
+
+    /**
+     * Shows or hides the native Swing frame.
+     *
+     * @param visible new frame visibility
+     * @return current window
+     */
+    @Override
+    public JFWindow setVisible(boolean visible) {
+        window.setVisible(visible);
         return this;
     }
 

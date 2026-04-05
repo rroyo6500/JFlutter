@@ -13,16 +13,57 @@ import rroyo.JF.JFEvents.JFInteractiveComponent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
+/**
+ * Basic single-line text input built from existing framework primitives.
+ * <p>
+ * The component wraps a {@link JFContainer} and overlays two {@link JFText} nodes:
+ * one for the visible text and one for the cursor marker. It keeps its own mutable
+ * text buffer, tracks the caret position, and reacts to keyboard events to update
+ * the rendered viewport inside the fixed-size field.
+ *
+ * @author rroyo
+ */
 public class JFTextField extends JFComplexComponent implements JFInteractiveComponent {
 
+    /**
+     * Horizontal inset applied between the border and the rendered text.
+     */
     private static final int HORIZONTAL_PADDING = 5;
+
+    /**
+     * Font used both for rendering and for width measurements.
+     * <p>
+     * Keeping a shared font instance ensures the viewport calculations match the
+     * actual text that will be painted on screen.
+     */
     private static final Font TEXT_FONT = new Font("Arial", Font.PLAIN, 12);
 
+    /**
+     * Visual text node that renders the visible portion of the current value.
+     */
     private final JFText writedText;
+
+    /**
+     * Overlay text node used to show the caret as an underscore.
+     */
     private final JFText cursorText;
+
+    /**
+     * Backing buffer containing the full text value, including parts that may be outside the viewport.
+     */
     private final StringBuilder text = new StringBuilder();
+
+    /**
+     * Caret position inside {@link #text}, measured in characters.
+     */
     private int cursorPosition = 0;
 
+    /**
+     * Creates a text field with a light-gray background and a black border.
+     *
+     * @param width field width in pixels
+     * @param height field height in pixels
+     */
     public JFTextField(int width, int height) {
         this(
                 new JFContainer(width, height, Color.lightGray),
@@ -31,6 +72,13 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         );
     }
 
+    /**
+     * Builds the internal composition used by the text field.
+     *
+     * @param container background box acting as the field body
+     * @param writedText text node that renders visible characters
+     * @param cursorText text node that renders the caret overlay
+     */
     private JFTextField(JFContainer container, JFText writedText, JFText cursorText) {
         super(() -> {
             Point textPosition = calculateTextPosition(container);
@@ -60,14 +108,30 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         refreshVisualState();
     }
 
+    /**
+     * Returns the full text currently stored in the field.
+     *
+     * @return current field value
+     */
     public String getText() {
         return text.toString();
     }
 
+    /**
+     * Exposes the internal text node that paints the visible substring.
+     *
+     * @return visible-text component
+     */
     public JFText getTextComponent() {
         return writedText;
     }
 
+    /**
+     * Replaces the current value and keeps the caret inside the new text bounds.
+     *
+     * @param value new text value, or {@code null} to clear the field
+     * @return current text field for fluent updates
+     */
     public JFTextField setText(String value) {
         text.setLength(0);
         text.append(value == null ? "" : value);
@@ -76,6 +140,11 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         return this;
     }
 
+    /**
+     * Applies typing and navigation keys to the internal text buffer.
+     *
+     * @param e keyboard event routed by the active window
+     */
     private void handleKeyEvent(JFKeyEvent e) {
         if (e.getType() == KeyEventTypes.KEY_TYPED) {
             char typedChar = e.getKeyChar();
@@ -115,6 +184,9 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         refreshVisualState();
     }
 
+    /**
+     * Recomputes the visible substring, caret overlay and text position after a state change.
+     */
     private void refreshVisualState() {
         JFContainer container = (JFContainer) getContent();
         Point textPosition = calculateTextPosition(container);
@@ -126,6 +198,16 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         cursorText.setText(visibleTextState.cursorOverlay());
     }
 
+    /**
+     * Chooses the substring that fits in the available width while keeping the caret visible.
+     * <p>
+     * The viewport expands to the left from the caret first, then grows to the right until the
+     * remaining horizontal space is exhausted. The returned overlay string mirrors the visible
+     * prefix up to the caret and adds an underscore that acts as the cursor.
+     *
+     * @param container container that defines the available width
+     * @return visible text and cursor overlay to render
+     */
     private VisibleTextState calculateVisibleTextState(JFContainer container) {
         String fullText = text.toString();
         int availableWidth = Math.max(0, container.getWidth() - HORIZONTAL_PADDING);
@@ -150,6 +232,12 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         return new VisibleTextState(visibleText, cursorOverlay);
     }
 
+    /**
+     * Computes the top-left position used to paint text inside the field body.
+     *
+     * @param container field container whose size defines the vertical centering
+     * @return local drawing position for both text layers
+     */
     private static Point calculateTextPosition(JFContainer container) {
         FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(TEXT_FONT);
         int x = HORIZONTAL_PADDING;
@@ -157,6 +245,12 @@ public class JFTextField extends JFComplexComponent implements JFInteractiveComp
         return new Point(x, y);
     }
 
+    /**
+     * Immutable snapshot of the text actually rendered after viewport clipping.
+     *
+     * @param visibleText substring that fits inside the field
+     * @param cursorOverlay substring plus caret marker used by the overlay node
+     */
     private record VisibleTextState(String visibleText, String cursorOverlay) {
     }
 }

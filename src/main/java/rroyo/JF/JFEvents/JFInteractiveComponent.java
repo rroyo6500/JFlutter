@@ -10,6 +10,6 @@ package rroyo.JF.JFEvents;
  *
  * @author rroyo
  */
-public interface JFInteractiveComponent extends JFActionComponent, JFHoverComponent, JFKeyComponent {
+public interface JFInteractiveComponent extends JFActionComponent, JFHoverComponent, JFKeyComponent, JFWheelComponent {
 
 }

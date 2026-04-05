@@ -35,6 +35,11 @@ final class JFEventStore {
      */
     static final Map<JFKeyComponent, List<JFKeyListener>> KEY_LISTENERS =
             Collections.synchronizedMap(new WeakHashMap<>());
+    /**
+     * Listener registry for wheel event sources.
+     */
+    static final Map<JFWheelComponent, List<JFWheelListener>> WHEEL_LISTENERS =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
      * Hidden constructor because this type is only a static utility holder.
@@ -70,5 +75,15 @@ final class JFEventStore {
      */
     static List<JFKeyListener> keyListenersFor(JFKeyComponent source) {
         return KEY_LISTENERS.computeIfAbsent(source, ignored -> new ArrayList<>());
+    }
+
+    /**
+     * Returns the wheel listener list for a source, creating it when absent.
+     *
+     * @param source wheel event source key
+     * @return mutable listener list bound to the source
+     */
+    static List<JFWheelListener> wheelListenersFor(JFWheelComponent source) {
+        return WHEEL_LISTENERS.computeIfAbsent(source, ignored -> new ArrayList<>());
     }
 }

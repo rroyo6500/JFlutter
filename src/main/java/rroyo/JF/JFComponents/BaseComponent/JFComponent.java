@@ -72,6 +72,15 @@ public abstract class JFComponent {
     private boolean active = true;
 
     /**
+     * Allows this component to extend outside parent bounds without triggering validation errors.
+     */
+    private boolean overflowAllowed = false;
+    /**
+     * Restricts child drawing and hit testing to this component bounds.
+     */
+    private boolean clipChildrenToBounds = false;
+
+    /**
      * Indicates whether children must be laid out before this component recalculates itself.
      * <p>
      * Some containers depend on the final size of their children to compute their own size,
@@ -201,6 +210,24 @@ public abstract class JFComponent {
     }
 
     /**
+     * Returns whether the component may render outside the bounds of its parent.
+     *
+     * @return {@code true} when overflow validation is disabled for this component
+     */
+    public boolean isOverflowAllowed() {
+        return overflowAllowed;
+    }
+
+    /**
+     * Returns whether child rendering and hit testing should be clipped to this component box.
+     *
+     * @return {@code true} when child clipping is enabled
+     */
+    public boolean isClipChildrenToBounds() {
+        return clipChildrenToBounds;
+    }
+
+    /**
      * Changes whether this component should be painted.
      *
      * @param visible new visibility state
@@ -223,6 +250,28 @@ public abstract class JFComponent {
 
         this.active = active;
         invalidateLayout();
+        return this;
+    }
+
+    /**
+     * Controls whether parent-bound validation should be skipped for this component.
+     *
+     * @param overflowAllowed new overflow policy
+     * @return current component for fluent calls
+     */
+    public JFComponent setOverflowAllowed(boolean overflowAllowed) {
+        this.overflowAllowed = overflowAllowed;
+        return this;
+    }
+
+    /**
+     * Controls whether children should only render and receive hits inside this component bounds.
+     *
+     * @param clipChildrenToBounds new clipping policy
+     * @return current component for fluent calls
+     */
+    public JFComponent setClipChildrenToBounds(boolean clipChildrenToBounds) {
+        this.clipChildrenToBounds = clipChildrenToBounds;
         return this;
     }
 
@@ -290,6 +339,7 @@ public abstract class JFComponent {
      */
     private void validateWithinParent() {
         if (!participatesInLayout() || parent == null) return;
+        if (overflowAllowed) return;
 
         Rectangle p = parent.componentBox;
         Rectangle c = this.componentBox;
@@ -578,6 +628,7 @@ public abstract class JFComponent {
      */
     public final JFComponent findTopMostAt(int x, int y) {
         if (!canDraw()) return null;
+        if (clipChildrenToBounds && !componentBox.contains(x, y)) return null;
 
         for (int i = childList.size() - 1; i >= 0; i--) {
             JFComponent child = childList.get(i);
@@ -586,6 +637,15 @@ public abstract class JFComponent {
         }
 
         return containsPoint(x, y) ? this : null;
+    }
+
+    /**
+     * Draws the current component tree using the regular framework traversal.
+     *
+     * @param g graphics context used for rendering
+     */
+    public final void drawTree(Graphics g) {
+        draw(g);
     }
 
     /**

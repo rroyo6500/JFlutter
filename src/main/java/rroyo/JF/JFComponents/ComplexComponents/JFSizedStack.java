@@ -18,6 +18,8 @@ import rroyo.JF.JFComponents.SimpleComponents.JFStack;
  */
 public class JFSizedStack extends JFComplexComponent implements JFMultiChildComponent<JFSizedStack> {
 
+    private static JFStack stack;
+
     /**
      * Creates a fixed-size stack with the requested alignment and children.
      *
@@ -26,13 +28,33 @@ public class JFSizedStack extends JFComplexComponent implements JFMultiChildComp
      * @param height fixed height of the resulting component
      */
     public JFSizedStack(Alignment alignment, int width, int height) {
-        super(() -> new JFSizedBox(width, height).addChild(
-                new JFStack(alignment)
-        ));
+        super(() -> {
+            stack = new JFStack(alignment);
+            return new JFSizedBox(width, height).addChild(stack);
+        });
     }
 
+    /**
+     * Forwards a child to the internal stack hosted inside the sized box.
+     *
+     * @param child child to layer inside the fixed-size stack
+     * @return current sized stack
+     */
+    @Override
+    public JFSizedStack addChild(JFComponent child) {
+        stack.addChild(child);
+        return this;
+    }
+
+    /**
+     * Forwards multiple children to the internal stack in insertion order.
+     *
+     * @param children children to layer inside the fixed-size stack
+     * @return current sized stack
+     */
+    @Override
     public JFSizedStack addChilds(JFComponent... children) {
-        ((JFStack) getChild().getChild()).addChilds(children);
+        stack.addChilds(children);
         return this;
     }
 

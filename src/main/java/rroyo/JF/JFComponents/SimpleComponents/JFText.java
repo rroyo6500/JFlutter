@@ -150,7 +150,7 @@ public class JFText extends JFComponent {
         }
 
         FontMetrics metrics = g2d.getFontMetrics(font);
-        g2d.setClip(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
+        g2d.clipRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
         g2d.setColor(color);
         g2d.setFont(font);
         g2d.drawString(text, componentBox.x, componentBox.y + Math.min(metrics.getAscent(), componentBox.height));

@@ -10,6 +10,14 @@ import org.jetbrains.annotations.NotNull;
 public interface JFMultiChildComponent<T extends JFComponent> {
 
     /**
+     * Adds a single child to the component.
+     *
+     * @param child child to attach
+     * @return current component
+     */
+    T addChild(@NotNull JFComponent child);
+
+    /**
      * Adds one or more children to the component in the provided order.
      *
      * @param children children to attach

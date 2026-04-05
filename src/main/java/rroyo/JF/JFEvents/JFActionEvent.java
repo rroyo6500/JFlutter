@@ -26,6 +26,14 @@ public class JFActionEvent {
      */
     private final ActionEventTypes action;
     /**
+     * Pointer x-coordinate in window space when the action happened.
+     */
+    private final int mouseX;
+    /**
+     * Pointer y-coordinate in window space when the action happened.
+     */
+    private final int mouseY;
+    /**
      * Represents the timestamp indicating when the action event occurred.
      * This variable stores the time in milliseconds since the Unix epoch
      * (January 1, 1970, 00:00:00 GMT). It is initialized at the time of the
@@ -43,8 +51,22 @@ public class JFActionEvent {
      * @param action A string representing the description or identifier of the action. Must not be null.
      */
     public JFActionEvent(JFComponent source, ActionEventTypes action) {
+        this(source, action, -1, -1);
+    }
+
+    /**
+     * Creates a new instance of {@code JFActionEvent} with pointer coordinates.
+     *
+     * @param source The component that triggered this action event. Must not be null.
+     * @param action action type associated with the event. Must not be null.
+     * @param mouseX pointer x-coordinate in window space
+     * @param mouseY pointer y-coordinate in window space
+     */
+    public JFActionEvent(JFComponent source, ActionEventTypes action, int mouseX, int mouseY) {
         this.source = source;
         this.action = action;
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
         this.timestamp = System.currentTimeMillis();
     }
 
@@ -64,6 +86,24 @@ public class JFActionEvent {
      */
     public ActionEventTypes getAction() {
         return action;
+    }
+
+    /**
+     * Returns the pointer x-coordinate associated with this action, when available.
+     *
+     * @return window-space x-coordinate, or {@code -1} when not provided
+     */
+    public int getMouseX() {
+        return mouseX;
+    }
+
+    /**
+     * Returns the pointer y-coordinate associated with this action, when available.
+     *
+     * @return window-space y-coordinate, or {@code -1} when not provided
+     */
+    public int getMouseY() {
+        return mouseY;
     }
 
     /**

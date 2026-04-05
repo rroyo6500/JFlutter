@@ -61,6 +61,22 @@ public abstract class JFFlex extends JFComponent implements JFMultiChildComponen
     }
 
     /**
+     * Adds a single child while enforcing the structural rules of flex containers.
+     *
+     * @param child child to attach
+     * @return current flex container
+     * @throws IllegalArgumentException when the child is a {@link JFCenter}
+     */
+    @Override
+    public JFFlex addChild(@NotNull JFComponent child) {
+        if (child.getClass() == JFCenter.class)
+            throw new IllegalArgumentException("Error: Cannot add JFCenter in to a " + this.getClass().getSimpleName());
+
+        attachChild(child);
+        return this;
+    }
+
+    /**
      * Adds multiple children while enforcing the structural rules of flex containers.
      * <p>
      * {@link JFCenter} is intentionally forbidden as a direct child because centering logic would
@@ -70,13 +86,10 @@ public abstract class JFFlex extends JFComponent implements JFMultiChildComponen
      * @return current flex container
      * @throws IllegalArgumentException when any child is a {@link JFCenter}
      */
+    @Override
     public JFFlex addChilds(@NotNull JFComponent... children) {
         for (JFComponent child : children) {
-
-            if (child.getClass() == JFCenter.class)
-                throw new IllegalArgumentException("Error: Cannot add JFCenter in to a " + this.getClass().getSimpleName());
-
-            attachChild(child);
+            addChild(child);
         }
         return this;
     }
