@@ -16,6 +16,7 @@ import rroyo.JF.JFComponents.SimpleComponents.JFText;
 import rroyo.JF.JFComponents.SimpleComponents.JFViewport;
 import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
 import rroyo.JF.JFEvents.JFActionEvent;
+import rroyo.JF.JFEvents.JFFocusTargetComponent;
 import rroyo.JF.JFEvents.JFHoverEvent;
 import rroyo.JF.JFEvents.JFInteractiveComponent;
 
@@ -35,7 +36,7 @@ import java.util.function.Consumer;
  *
  * @author rroyo
  */
-public class JFComboBox extends JFComplexComponent implements JFInteractiveComponent {
+public class JFComboBox extends JFComplexComponent implements JFInteractiveComponent, JFFocusTargetComponent {
 
     private static final int DEFAULT_WIDTH = 220;
     private static final int DEFAULT_ITEM_HEIGHT = 34;
@@ -156,9 +157,6 @@ public class JFComboBox extends JFComplexComponent implements JFInteractiveCompo
                 case KeyEvent.VK_ESCAPE -> setExpanded(false);
                 case KeyEvent.VK_DOWN -> moveSelection(1);
                 case KeyEvent.VK_UP -> moveSelection(-1);
-                default -> {
-                    return;
-                }
             }
         });
 
@@ -327,6 +325,11 @@ public class JFComboBox extends JFComplexComponent implements JFInteractiveCompo
      */
     public JFComboBox removeSelectionListener(Consumer<JFComboBox> listener) {
         selectionListeners.remove(listener);
+        return this;
+    }
+
+    @Override
+    public JFComponent getKeyFocusTarget() {
         return this;
     }
 

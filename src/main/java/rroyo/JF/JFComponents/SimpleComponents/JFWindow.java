@@ -8,6 +8,7 @@ import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
 import rroyo.JF.JFEvents.JFActionComponent;
 import rroyo.JF.JFEvents.JFActionEvent;
+import rroyo.JF.JFEvents.JFFocusTargetComponent;
 import rroyo.JF.JFEvents.JFHoverComponent;
 import rroyo.JF.JFEvents.JFHoverEvent;
 import rroyo.JF.JFEvents.JFKeyComponent;
@@ -169,7 +170,7 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
             public void mousePressed(MouseEvent e) {
                 panel.requestFocusInWindow();
                 JFComponent target = findTopMostAtWithOverlays(e.getX(), e.getY());
-                focusedComponent = (JFComponent) findEventSource(target, JFKeyComponent.class);
+                focusedComponent = resolveFocusedComponent(target);
                 JFActionComponent source = findEventSource(target, JFActionComponent.class);
 
                 if (source != null) {
@@ -335,6 +336,38 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         }
 
         return null;
+    }
+
+    /**
+     * Resolves which component should receive keyboard focus after a pointer press.
+     * <p>
+     * Complex widgets may expose many nested interactive parts but still want keyboard input to be
+     * routed to one outer owner. Components implementing {@link JFFocusTargetComponent} can
+     * explicitly declare that owner and take precedence over the default nearest-key-component rule.
+     *
+     * @param start deepest component initially hit by the pointer
+     * @return component that should own keyboard focus, or {@code null} when none is suitable
+     */
+    private JFComponent resolveFocusedComponent(JFComponent start) {
+        JFComponent current = start;
+        JFComponent fallbackKeyComponent = null;
+
+        while (current != null) {
+            if (current instanceof JFFocusTargetComponent focusTargetComponent) {
+                JFComponent focusTarget = focusTargetComponent.getKeyFocusTarget();
+                if (focusTarget instanceof JFKeyComponent) {
+                    return focusTarget;
+                }
+            }
+
+            if (fallbackKeyComponent == null && current instanceof JFKeyComponent) {
+                fallbackKeyComponent = current;
+            }
+
+            current = current.getParent();
+        }
+
+        return fallbackKeyComponent;
     }
 
     /**

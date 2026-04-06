@@ -1,12 +1,9 @@
 package rroyo;
 
-import rroyo.JF.Enums.*;
-import rroyo.JF.Decorations.*;
-import rroyo.CustomComponents.*;
-import rroyo.JF.JFComponents.SimpleComponents.*;
+import rroyo.JF.Enums.MainAxisAlignment;
+import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 import rroyo.JF.JFComponents.ComplexComponents.*;
-
-import java.awt.*;
+import rroyo.JF.JFComponents.SimpleComponents.*;
 
 /**
  * Example application entry point used as a manual playground for the framework.
@@ -28,10 +25,9 @@ public class Main {
      */
     public static void main(String[] args) {
 
-        JFWindow window = new JFWindow(800, 800, "");
+        JFWindow window = new JFWindow(800, 800, "").setVisible(true);
 
-        window.addChild(new JFContainer(100, 100, Color.red)).setVisible(true);
-
+        //
     }
 
 }
