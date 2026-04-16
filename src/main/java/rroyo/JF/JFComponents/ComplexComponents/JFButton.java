@@ -29,6 +29,10 @@ public class JFButton extends JFComplexComponent implements JFInteractiveCompone
      */
     private final JFText text;
 
+    public JFButton(int width, int height, String text) {
+        this(width, height, new JFText(text));
+    }
+
     /**
      * Creates a button with fixed size and centered text content.
      *

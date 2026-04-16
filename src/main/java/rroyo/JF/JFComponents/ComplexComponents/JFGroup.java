@@ -6,6 +6,7 @@ import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 import rroyo.JF.JFComponents.BaseComponent.JFComplexComponent;
 import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
 import rroyo.JF.JFComponents.SimpleComponents.JFColumn;
+import rroyo.JF.JFComponents.SimpleComponents.JFSizedBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,10 @@ public class JFGroup extends JFComplexComponent implements JFMultiChildComponent
             throw new IllegalArgumentException("JFGroup only accepts ROUND selection controls.");
         }
 
-        column.addChild(selector);
+        column.addChilds(
+                selector,
+                new JFSizedBox(1, 5)
+        );
         selector.setGroup(this);
         return this;
     }
@@ -115,6 +119,15 @@ public class JFGroup extends JFComplexComponent implements JFMultiChildComponent
     void select(JFSelectionControl selected) {
         for (JFSelectionControl member : List.copyOf(members)) {
             member.updateSelectedState(member == selected, true);
+        }
+    }
+
+    /**
+     * Unselects all members of the group.
+     */
+    public void clearSelection() {
+        for (JFSelectionControl member : List.copyOf(members)) {
+            member.updateSelectedState(false, true);
         }
     }
 

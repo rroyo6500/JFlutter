@@ -475,6 +475,8 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         return this;
     }
 
+
+
     /**
      * Returns the visibility of the native Swing frame.
      *
@@ -495,6 +497,12 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
     public JFWindow setVisible(boolean visible) {
         window.setVisible(visible);
         return this;
+    }
+
+    @Override
+    public JFWindow setActive(boolean active) {
+        setActive(false);
+        return this.setVisible(active);
     }
 
     /**

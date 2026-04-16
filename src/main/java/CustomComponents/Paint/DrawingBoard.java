@@ -1,4 +1,4 @@
-package rroyo.CustomComponents;
+package CustomComponents.Paint;
 
 import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.KeyEventTypes;
