@@ -1,4 +1,3 @@
-import CustomComponents.TicTacToe.TTTBox;
 import rroyo.JF.Enums.Alignment;
 import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.SimpleComponents.*;
@@ -14,9 +13,6 @@ import rroyo.JF.JFComponents.SimpleComponents.*;
  */
 public class Main {
 
-    private static char player = 'X';
-    private static TTTBox[][] boxes = new TTTBox[3][3];
-
     /**
      * Boots the demo application and creates the root window.
      * <p>
@@ -29,58 +25,10 @@ public class Main {
         JFWindow window = new JFWindow(800, 800, "").setVisible(true);
 
         //
-        JFSizedBox victoryBox = new JFSizedBox(500, 500)
-                .addChild(new JFText("Victory!"));
-        victoryBox.setVisible(false);
 
-        JFColumn board = new JFColumn();
-        for (int i = 0; i < 3; i++) {
-            JFRow row = new JFRow();
-            for (int j = 0; j < 3; j++) {
-                TTTBox box = new TTTBox(100, 100, "src/main/resources/images/X.png", "src/main/resources/images/O.png");
-                box.addActionListener(e -> {
-                    if (box.setValue(player)) {
-                        if (compVisctory()) victoryBox.setVisible(true);
-                        player = (player == 'X') ? 'O' : 'X';
-                    }
-                });
-                boxes[i][j] = box;
-                row.addChild(box);
-            }
-            board.addChild(row);
-        }
-
-        window.addChild(
-                new JFStack(Alignment.CENTER).addChilds(
-                        board.mainAxisAlignment(MainAxisAlignment.CENTER),
-                        victoryBox
-                )
-        );
 
 
     }
-
-    private static boolean compVisctory() {
-
-        for (int i = 0; i < 3; i++) {
-            if (boxes[i][0].getValue() == player &&
-                    boxes[i][1].getValue() == player &&
-                    boxes[i][2].getValue() == player
-            ) return true;
-        }
-
-        for (int i = 0; i < 3; i++) {
-            if (boxes[0][i].getValue() == player &&
-                    boxes[1][i].getValue() == player &&
-                    boxes[2][i].getValue() == player
-            ) return true;
-        }
-
-        return boxes[0][0].getValue() == player && boxes[1][1].getValue() == player && boxes[2][2].getValue() == player ||
-                boxes[0][2].getValue() == player && boxes[1][1].getValue() == player && boxes[2][0].getValue() == player;
-
-    }
-
 }
 
 
