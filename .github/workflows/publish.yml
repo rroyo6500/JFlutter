@@ -1,0 +1,51 @@
+name: Publish Maven Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish, for example 1.0.0 or 1.1.0-SNAPSHOT
+        required: true
+        default: 1.0.0
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java and Maven publishing
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '23'
+          cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Set manual version
+        if: github.event_name == 'workflow_dispatch'
+        run: mvn -B versions:set -DnewVersion=${{ inputs.version }} -DgenerateBackupPoms=false
+
+      - name: Set tag version
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mvn -B versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+
+      - name: Publish to GitHub Packages
+        run: mvn -B clean deploy
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

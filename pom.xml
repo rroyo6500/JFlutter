@@ -12,12 +12,36 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>JFlutter</name>
+            <url>https://maven.pkg.github.com/rroyo6500/JFlutter</url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/rroyo6500/JUtils</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>13.0</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>rroyo.jutils</groupId>
+            <artifactId>jutils</artifactId>
+            <version>1.0.3</version>
         </dependency>
     </dependencies>
 
