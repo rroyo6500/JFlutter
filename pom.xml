@@ -5,8 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>rroyo.JF</groupId>
-    <artifactId>JFlutter</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>jflutter</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
@@ -43,6 +44,7 @@
             <groupId>rroyo.jutils</groupId>
             <artifactId>jutils</artifactId>
             <version>1.0.3</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
