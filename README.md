@@ -61,7 +61,7 @@ JFlutter es una biblioteca Java que simplifica el desarrollo de aplicaciones de 
 
 ### Dependencias
 - `org.jetbrains:annotations` - Anotaciones para análisis estático de código
-- `rroyo.jutils:jutils 1.0.3` - Utilidades propias del autor
+- `rroyo.jutils:jutils 1.0.3` - Utilidades propias [JUtils](https://github.com/rroyo6500/JUtils)
 
 ---
 
@@ -85,7 +85,7 @@ JFlutter es una biblioteca Java que simplifica el desarrollo de aplicaciones de 
    <dependency>
        <groupId>rroyo.JF</groupId>
        <artifactId>jflutter</artifactId>
-       <version>1.0.0-SNAPSHOT</version>
+       <version>1.0.0</version>
    </dependency>
    ```
 
@@ -113,9 +113,7 @@ JFlutter/
 │   ├── JFEvents/               # Sistema completo de eventos
 │   ├── Enums/                  # Enumeraciones (Alignment, MainAxisAlignment, etc)
 │   └── Decorations/            # Sistema de decoraciones (Border, BoxShadow, etc)
-├── src/test/                   # Tests unitarios
-├── pom.xml                     # Configuración Maven
-└── README.md                   # Este archivo
+└── pom.xml                     # Configuración Maven
 ```
 
 ---
