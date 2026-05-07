@@ -1,7 +1,9 @@
 package rroyo.JF.JFComponents.BaseComponent;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
+import rroyo.JUtils.Utils.Core.Validator;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ public abstract class JFComponent {
      * up the tree looking for ancestor context, and to propagate layout invalidation.
      */
     protected JFComponent parent;
+
+    protected JFWindow window;
 
     /**
      * Mutable list of direct child components.
@@ -139,6 +143,16 @@ public abstract class JFComponent {
      */
     public JFComponent getParent() {
         return parent;
+    }
+
+    public JFComponent setParent(@NotNull JFComponent parent) {
+        this.parent = parent;
+        return this;
+    }
+
+    public JFComponent setWindow(@NotNull JFWindow window) {
+        this.window = window;
+        return this;
     }
 
     /**
@@ -303,11 +317,11 @@ public abstract class JFComponent {
      * @param parent parent component receiving this child
      * @throws IllegalStateException if the component was already attached to a different parent
      */
-    protected void init(@NotNull JFComponent parent) {
-        if (this.parent != null)
-            throw new IllegalStateException("Component already has a parent.");
+    protected void init(@NotNull JFComponent parent, @NotNull JFWindow window) {
+        Validator.assertTrue(this.parent != null, "Component already has a parent.");
 
-        this.parent = parent;
+        setWindow(window);
+        setParent(parent);
         updateAbsolutePositionFromLocal();
         invalidateLayout();
     }
@@ -438,7 +452,7 @@ public abstract class JFComponent {
         if (nonNullChild.getClass() == JFWindow.class) throw new RuntimeException("Cannot add JFWindow to a JFComponent");
 
         childList.add(nonNullChild);
-        nonNullChild.init(this);
+        nonNullChild.init(this, window);
         invalidateLayout();
         return this;
     }
@@ -655,6 +669,11 @@ public abstract class JFComponent {
      */
     @Override
     public String toString() {
-        return String.format("%s{width:%d, height:%d}", this.getClass().getSimpleName(), componentBox.width, componentBox.height);
+        return String.format("%s{width: %d, height: %d, Position: %s, ParentClass: %s}",
+                this.getClass().getSimpleName(),
+                componentBox.width, componentBox.height,
+                new Point(componentBox.x, componentBox.y),
+                parent.getClass().getSimpleName()
+        );
     }
 }
