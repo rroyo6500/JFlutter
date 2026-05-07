@@ -318,7 +318,7 @@ public abstract class JFComponent {
      * @throws IllegalStateException if the component was already attached to a different parent
      */
     protected void init(@NotNull JFComponent parent, @NotNull JFWindow window) {
-        Validator.assertTrue(this.parent != null, "Component already has a parent.");
+        Validator.assertTrue(this.parent == null, "Component already has a parent.");
 
         setWindow(window);
         setParent(parent);

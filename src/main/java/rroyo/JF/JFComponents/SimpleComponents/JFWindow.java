@@ -153,6 +153,7 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
 
         setWindow(this);
         setupInputListeners();
+        setupTimer();
     }
 
     private void setupTimer() {
