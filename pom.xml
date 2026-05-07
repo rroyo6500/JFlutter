@@ -44,7 +44,6 @@
             <groupId>rroyo.jutils</groupId>
             <artifactId>jutils</artifactId>
             <version>1.0.3</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
