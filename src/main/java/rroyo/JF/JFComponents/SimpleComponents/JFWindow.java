@@ -5,7 +5,7 @@ import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.Enums.KeyEventTypes;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
+import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
 import rroyo.JF.JFEvents.JFActionComponent;
 import rroyo.JF.JFEvents.JFActionEvent;
 import rroyo.JF.JFEvents.JFFocusTargetComponent;
@@ -16,6 +16,7 @@ import rroyo.JF.JFEvents.JFKeyEvent;
 import rroyo.JF.JFEvents.JFWheelComponent;
 import rroyo.JF.JFEvents.JFWheelEvent;
 import rroyo.JUtils.Utils.Console.TStyle;
+import rroyo.JUtils.Utils.Core.Validator;
 import rroyo.JUtils.Utils.Logging.LoggerAux;
 
 import javax.swing.*;
@@ -32,12 +33,13 @@ import java.util.List;
  * keyboard focus state, and translates raw Swing input events into framework-specific action,
  * hover and keyboard events.
  * <p>
- * Unlike the rest of the components, a window is always the root of a tree and only accepts
- * a single direct child. Its dimensions define the coordinate space used by all descendants.
+ * Unlike the rest of the components, a window is always the root of a tree. It may retain
+ * multiple direct child trees, but only the loaded child participates in the active render and
+ * input cycle. Its dimensions define the coordinate space used by all descendants.
  *
  * @author rroyo
  */
-public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWindow> {
+public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWindow> {
 
     /**
      * Background color used to clear the full window surface before drawing children.
@@ -78,7 +80,18 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
      */
     private final List<JFComponent> overlayComponents = new ArrayList<>();
 
+    /**
+     * Target number of repaint requests scheduled per second.
+     */
     private final int frameRate;
+
+    /**
+     * Index of the root child currently mounted for layout, rendering and event dispatch.
+     * <p>
+     * The window can retain more than one root child, but only this selected entry behaves as
+     * the active scene during the paint and input cycle.
+     */
+    private int loadedChild = 0;
 
     /**
      * Custom Swing panel used as the frame content pane.
@@ -92,9 +105,11 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            JFWindow.this.layout();
-            JFWindow.this.validateTree();
-            JFWindow.this.draw(g);
+            JFComponent activeChild = getLoadedChild();
+
+            JFWindow.this.layout(activeChild);
+            JFWindow.this.validateTree(activeChild);
+            JFWindow.this.draw(g, activeChild);
 
             for (JFComponent overlayComponent : overlayComponents) {
                 overlayComponent.drawTree(g);
@@ -115,6 +130,14 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         this(60, width, height, title, JFrame.EXIT_ON_CLOSE);
     }
 
+    /**
+     * Creates a top-level window with a custom repaint rate and the default close behavior.
+     *
+     * @param frameRate target repaint requests per second
+     * @param width width of the window content area in pixels
+     * @param height height of the window content area in pixels
+     * @param title native window title
+     */
     public JFWindow(int frameRate, int width, int height, String title) {
         this(frameRate, width, height, title, JFrame.EXIT_ON_CLOSE);
     }
@@ -126,6 +149,7 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
      * bridges, makes the panel focusable so it can receive keyboard input, and finally shows
      * the window on screen.
      *
+     * @param frameRate target repaint requests per second
      * @param width width of the window content area in pixels
      * @param height height of the window content area in pixels
      * @param title native window title
@@ -156,6 +180,9 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         setupTimer();
     }
 
+    /**
+     * Starts the repaint timer used to keep Swing asking the panel for new frames.
+     */
     private void setupTimer() {
         int delay = 1000 / frameRate;
         Timer timer = new Timer(delay, e -> {
@@ -324,7 +351,13 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
             }
         }
 
-        return findTopMostAt(x, y);
+        JFComponent activeChild = getLoadedChild();
+        if (activeChild == null) {
+            return containsPoint(x, y) ? this : null;
+        }
+
+        JFComponent target = activeChild.findTopMostAt(x, y);
+        return target != null ? target : containsPoint(x, y) ? this : null;
     }
 
     /**
@@ -433,24 +466,126 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
     }
 
     /**
-     * Replaces the current root child of the window.
+     * Adds a root child and makes it the active one.
      * <p>
-     * A window behaves as a single-child root container, so any previous child is removed before
-     * the new child is attached. Hover and focus caches are also cleared because they are no longer
-     * valid for the old tree.
+     * The window keeps previously attached root children available, but only the loaded child is
+     * laid out, painted and hit-tested. Hover and focus caches are cleared because the active tree
+     * may have changed.
      *
      * @param child new root component to mount inside the window
      * @return current window for fluent composition
      */
     @Override
     public JFWindow addChild(@NotNull JFComponent child) {
-        clearChildren();
-        hoveredComponent = null;
-        focusedComponent = null;
-        overlayComponents.clear();
+        return addChild(child, true);
+    }
+
+    /**
+     * Adds a root child and optionally switches the window to it immediately.
+     *
+     * @param child root component to retain in the window
+     * @param load whether the new root should become the active child
+     * @return current window for fluent composition
+     */
+    public JFWindow addChild(@NotNull JFComponent child, boolean load) {
         attachChild(child);
+        if (load) {
+            hoveredComponent = null;
+            focusedComponent = null;
+            overlayComponents.clear();
+            loadedChild = childList.size() - 1;
+        }
         window.repaint();
         return this;
+    }
+
+    /**
+     * Adds several root children in order and leaves the last one active.
+     *
+     * @param children root components to retain in the window
+     * @return current window for fluent composition
+     */
+    @Override
+    public JFWindow addChilds(@NotNull JFComponent... children) {
+        for (JFComponent child : children) {
+            addChild(child, false);
+        }
+
+        if (children.length > 0) {
+            loadChild(childList.size() - 1);
+        }
+
+        return this;
+    }
+
+    /**
+     * Switches the active root child by index.
+     *
+     * @param childIndex index of the retained root child to load
+     * @return current window for fluent composition
+     * @throws IndexOutOfBoundsException when the index does not refer to an attached root child
+     */
+    public JFWindow loadChild(int childIndex) {
+        if (childIndex < 0 || childIndex >= childList.size()) {
+            throw new IndexOutOfBoundsException("Child index " + childIndex + " is out of bounds for " + childList.size() + " root children.");
+        }
+
+        hoveredComponent = null;
+        focusedComponent = null;
+        loadedChild = childIndex;
+        invalidateLayout();
+        window.repaint();
+
+        LoggerAux.info("Loaded panel " + childIndex);
+
+        return this;
+    }
+
+
+    /**
+     * Switches the active root child by component reference.
+     * <p>
+     * This method provides a convenient way to load a child component without needing to know
+     * its index. It validates that the provided component is both non-null and actually attached
+     * to this window, then resolves its index and delegates to {@link #loadChild(int)}.
+     * <p>
+     * When the child is successfully loaded, the hover and focus caches are cleared as the
+     * active tree may have changed. The window is invalidated and repainted.
+     *
+     * @param child the root component to load and make active
+     * @return current window for fluent composition
+     * @throws IllegalArgumentException if the child is {@code null} or not a valid child of this window
+     */
+    public JFWindow loadChild(JFComponent child) {
+        Validator.notNull(child, "child is null");
+        Validator.assertTrue(childList.contains(child), "child is not a valid child.");
+        int childIndex = childList.indexOf(child);
+        return loadChild(childIndex);
+    }
+
+    /**
+     * Returns the root child currently selected for rendering.
+     *
+     * @return active root child, or {@code null} when the window has no child
+     */
+    public JFComponent getLoadedChild() {
+        if (loadedChild < 0 || loadedChild >= childList.size()) {
+            return null;
+        }
+
+        return childList.get(loadedChild);
+    }
+
+    /**
+     * Returns the index of the root child currently selected for rendering.
+     * <p>
+     * This method provides direct access to the {@link #loadedChild} field, allowing callers
+     * to determine which child is currently active without retrieving the component itself.
+     *
+     * @return the index of the currently loaded root child
+     */
+    public int getLoadedChildIndex() {
+        return loadedChild;
     }
 
     /**
@@ -488,8 +623,6 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         return this;
     }
 
-
-
     /**
      * Returns the visibility of the native Swing frame.
      *
@@ -512,9 +645,15 @@ public class JFWindow extends JFComponent implements JFSingleChildComponent<JFWi
         return this;
     }
 
+    /**
+     * Enables or disables the framework window and mirrors that state to the native frame.
+     *
+     * @param active new active and visible state
+     * @return current window
+     */
     @Override
     public JFWindow setActive(boolean active) {
-        setActive(false);
+        super.setActive(active);
         return this.setVisible(active);
     }
 
