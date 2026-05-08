@@ -35,6 +35,12 @@ public abstract class JFComponent {
      */
     protected JFComponent parent;
 
+    /**
+     * Window that owns the component tree containing this component.
+     * <p>
+     * Components use this reference when they need access to root-level services such as repaint
+     * scheduling or overlay registration. Detached components receive the reference when attached.
+     */
     protected JFWindow window;
 
     /**
@@ -145,11 +151,23 @@ public abstract class JFComponent {
         return parent;
     }
 
+    /**
+     * Updates the parent reference used for ancestry traversal and absolute positioning.
+     *
+     * @param parent new parent component
+     * @return current component for fluent calls
+     */
     public JFComponent setParent(@NotNull JFComponent parent) {
         this.parent = parent;
         return this;
     }
 
+    /**
+     * Stores the root window that owns this component tree.
+     *
+     * @param window owning framework window
+     * @return current component for fluent calls
+     */
     public JFComponent setWindow(@NotNull JFWindow window) {
         this.window = window;
         return this;
@@ -534,6 +552,43 @@ public abstract class JFComponent {
     }
 
     /**
+     * Executes layout for this component while limiting recursion to one selected child.
+     * <p>
+     * This variant is used by root containers that can retain multiple child trees but only want
+     * one tree to participate in the current render cycle.
+     *
+     * @param loadedChild child that should participate in this layout pass
+     */
+    protected final void layout(JFComponent loadedChild) {
+        if (!participatesInLayout()) {
+            layoutDirty = false;
+            return;
+        }
+
+        if (!layoutDirty) return;
+
+        int layoutPasses = 0;
+        do {
+            layoutDirty = false;
+
+            if (loadedChild != null)
+                if (layoutRequireChild)
+                    if (loadedChild.participatesInLayout())
+                        loadedChild.layout();
+
+            layoutRecalculate();
+
+            if (loadedChild != null)
+                if (loadedChild.participatesInLayout())
+                    loadedChild.layout();
+
+            layoutPasses++;
+            if (layoutPasses > 100)
+                throw new IllegalStateException("Layout did not stabilize for " + getClass().getSimpleName() + ".");
+        } while (layoutDirty);
+    }
+
+    /**
      * Recalculates the component geometry according to the rules of the concrete subclass.
      * <p>
      * Implementations usually decide their own size, position children, or both.
@@ -554,6 +609,21 @@ public abstract class JFComponent {
         for (JFComponent child : childList)
             if (child.participatesInLayout())
                 child.validateTree();
+    }
+
+    /**
+     * Validates this component while limiting recursive validation to one selected child.
+     *
+     * @param loadedChild child that should be validated with this component
+     */
+    protected final void validateTree(JFComponent loadedChild) {
+        if (!participatesInLayout()) return;
+
+        validateWithinParent();
+
+        if (loadedChild != null)
+            if (loadedChild.participatesInLayout())
+                loadedChild.validateTree();
     }
 
     /**
@@ -613,6 +683,21 @@ public abstract class JFComponent {
     }
 
     /**
+     * Draws this component and a single selected child tree.
+     *
+     * @param g graphics context supplied by the window
+     * @param loadedChild child that should be painted after this component
+     */
+    protected void draw(Graphics g, JFComponent loadedChild) {
+        if (!canDraw()) return;
+
+        design(g);
+
+        if (loadedChild != null)
+            loadedChild.draw(g);
+    }
+
+    /**
      * Paints the visual representation of the current component only.
      *
      * @param g graphics context used for rendering
@@ -669,11 +754,13 @@ public abstract class JFComponent {
      */
     @Override
     public String toString() {
+        String parentClass = parent == null ? "null" : parent.getClass().getSimpleName();
+
         return String.format("%s{width: %d, height: %d, Position: %s, ParentClass: %s}",
                 this.getClass().getSimpleName(),
                 componentBox.width, componentBox.height,
                 new Point(componentBox.x, componentBox.y),
-                parent.getClass().getSimpleName()
+                parentClass
         );
     }
 }
