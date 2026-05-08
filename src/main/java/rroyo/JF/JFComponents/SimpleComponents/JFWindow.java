@@ -16,6 +16,7 @@ import rroyo.JF.JFEvents.JFKeyEvent;
 import rroyo.JF.JFEvents.JFWheelComponent;
 import rroyo.JF.JFEvents.JFWheelEvent;
 import rroyo.JUtils.Utils.Console.TStyle;
+import rroyo.JUtils.Utils.Core.Validator;
 import rroyo.JUtils.Utils.Logging.LoggerAux;
 
 import javax.swing.*;
@@ -534,7 +535,32 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
         loadedChild = childIndex;
         invalidateLayout();
         window.repaint();
+
+        LoggerAux.info("Loaded panel " + childIndex);
+
         return this;
+    }
+
+
+    /**
+     * Switches the active root child by component reference.
+     * <p>
+     * This method provides a convenient way to load a child component without needing to know
+     * its index. It validates that the provided component is both non-null and actually attached
+     * to this window, then resolves its index and delegates to {@link #loadChild(int)}.
+     * <p>
+     * When the child is successfully loaded, the hover and focus caches are cleared as the
+     * active tree may have changed. The window is invalidated and repainted.
+     *
+     * @param child the root component to load and make active
+     * @return current window for fluent composition
+     * @throws IllegalArgumentException if the child is {@code null} or not a valid child of this window
+     */
+    public JFWindow loadChild(JFComponent child) {
+        Validator.notNull(child, "child is null");
+        Validator.assertTrue(childList.contains(child), "child is not a valid child.");
+        int childIndex = childList.indexOf(child);
+        return loadChild(childIndex);
     }
 
     /**
@@ -542,12 +568,24 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
      *
      * @return active root child, or {@code null} when the window has no child
      */
-    private JFComponent getLoadedChild() {
+    public JFComponent getLoadedChild() {
         if (loadedChild < 0 || loadedChild >= childList.size()) {
             return null;
         }
 
         return childList.get(loadedChild);
+    }
+
+    /**
+     * Returns the index of the root child currently selected for rendering.
+     * <p>
+     * This method provides direct access to the {@link #loadedChild} field, allowing callers
+     * to determine which child is currently active without retrieving the component itself.
+     *
+     * @return the index of the currently loaded root child
+     */
+    public int getLoadedChildIndex() {
+        return loadedChild;
     }
 
     /**
