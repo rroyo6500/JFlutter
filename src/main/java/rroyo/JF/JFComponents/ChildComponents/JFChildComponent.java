@@ -98,6 +98,50 @@ public interface JFChildComponent {
     }
 
     /**
+     * Returns a formatted text representation of this component tree.
+     *
+     * @return component tree with class names and IDs
+     */
+    default String getComponentTree() {
+        StringBuilder tree = new StringBuilder();
+        appendComponentTree((JFComponent) this, tree, "", true);
+        return tree.toString();
+    }
+
+    /**
+     * Prints this component tree to the standard output.
+     */
+    default void printComponentTree() {
+        System.out.println(getComponentTree());
+    }
+
+    private static void appendComponentTree(JFComponent component, StringBuilder tree, String prefix, boolean last) {
+        tree.append(prefix)
+                .append(last ? "`-- " : "|-- ")
+                .append(formatTreeNode(component))
+                .append(System.lineSeparator());
+
+        if (!(component instanceof JFChildComponent childComponent)) {
+            return;
+        }
+
+        List<JFComponent> children = childComponent.getChildList();
+        for (int i = 0; i < children.size(); i++) {
+            appendComponentTree(
+                    children.get(i),
+                    tree,
+                    prefix + (last ? "    " : "|   "),
+                    i == children.size() - 1
+            );
+        }
+    }
+
+    private static String formatTreeNode(JFComponent component) {
+        String id = component.getID() == null ? "<no-id>" : component.getID();
+        return component.getClass().getSimpleName() + " [id=" + id + "]";
+    }
+
+    /**
      * Updates the ID used to store one direct child.
      *
      * @param child child whose ID changed
