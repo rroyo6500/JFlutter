@@ -167,13 +167,18 @@ public abstract class JFComponent {
     }
 
     /**
-     * Stores the root window that owns this component tree.
+     * Stores the root window that owns this component tree and propagates it to descendants.
      *
-     * @param window owning framework window
+     * @param window owning framework window, or {@code null} while composing a detached subtree
      * @return current component for fluent calls
      */
-    public JFComponent setWindow(@NotNull JFWindow window) {
+    public JFComponent setWindow(@Nullable JFWindow window) {
         this.window = window;
+
+        for (JFComponent child : getTraversalChildren()) {
+            child.setWindow(window);
+        }
+
         return this;
     }
 
@@ -339,10 +344,10 @@ public abstract class JFComponent {
      * Mounts this component inside a component tree.
      *
      * @param parent parent component
-     * @param window owning window
+     * @param window owning window, or {@code null} while mounting inside a detached subtree
      * @throws IllegalStateException if the component was already attached to a different parent
      */
-    public final void mount(@NotNull JFComponent parent, @NotNull JFWindow window) {
+    public final void mount(@NotNull JFComponent parent, @Nullable JFWindow window) {
         Validator.assertTrue(this.parent == null, "Component already has a parent.");
 
         setWindow(window);
