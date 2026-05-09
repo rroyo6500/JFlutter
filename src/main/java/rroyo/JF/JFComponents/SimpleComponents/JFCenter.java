@@ -5,7 +5,7 @@ import rroyo.JF.Enums.Alignment;
 import rroyo.JF.Enums.CrossAxisAlignment;
 import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFSingleChildComponent;
 
 import java.awt.*;
 
@@ -18,6 +18,8 @@ import java.awt.*;
  * @author rroyo
  */
 public class JFCenter extends JFComponent implements JFSingleChildComponent<JFCenter> {
+
+    private final SingleChild childStore = new SingleChild();
 
     /**
      * Creates a centering container for a single child.
@@ -36,10 +38,8 @@ public class JFCenter extends JFComponent implements JFSingleChildComponent<JFCe
      * @return current component
      */
     @Override
-    public JFCenter addChild(@NotNull JFComponent child) {
-        clearChildren();
-        attachChild(child);
-        return this;
+    public SingleChild getChildStore() {
+        return childStore;
     }
 
     /**
@@ -51,8 +51,8 @@ public class JFCenter extends JFComponent implements JFSingleChildComponent<JFCe
      */
     @Override
     protected void layoutRecalculate() {
-        if (childList.isEmpty()) return;
-        JFComponent child = childList.getFirst();
+        JFComponent child = getChild();
+        if (child == null) return;
 
         if (!child.isActive()) {
             if (parent != null && parent.getWidth() != 0 && parent.getHeight() != 0)

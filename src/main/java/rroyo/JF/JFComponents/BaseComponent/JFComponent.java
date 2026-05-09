@@ -2,13 +2,17 @@ package rroyo.JF.JFComponents.BaseComponent;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rroyo.JF.JFComponents.ChildComponents.JFChildComponent;
 import rroyo.JF.JFComponents.SimpleComponents.JFWindow;
 import rroyo.JUtils.Utils.Core.Validator;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Abstract base class for every visual node managed by the framework.
@@ -44,13 +48,13 @@ public abstract class JFComponent {
     protected JFWindow window;
 
     /**
-     * Mutable list of direct child components.
+     * ID used by the parent to locate this component inside the component tree.
      * <p>
-     * Children are rendered in insertion order and traversed recursively for layout, drawing
-     * and hit testing. Some subclasses constrain this list to a single child, while layout
-     * containers such as rows, columns or stacks allow multiple entries.
+     * The value is assigned when the component is attached. Callers may also provide one through
+     * child-management APIs or update it later with {@link #setID(String)}.
      */
-    protected final List<JFComponent> childList = new ArrayList<>();
+    protected String id;
+    private boolean userDefinedID = false;
 
     /**
      * Absolute bounding rectangle of the component in window coordinates.
@@ -174,35 +178,41 @@ public abstract class JFComponent {
     }
 
     /**
-     * Returns the mutable list of direct children.
-     * <p>
-     * The list is exposed mainly for framework and advanced internal use. External callers
-     * should be careful when mutating it directly, as bypassing the normal child-management
-     * methods can skip parent initialization and layout invalidation.
+     * Returns the root window that owns this component tree.
      *
-     * @return mutable direct-children list
+     * @return owning window, or {@code null} while detached from a window
      */
-    public List<JFComponent> getChildList() {
-        return childList;
+    public JFWindow getWindow() {
+        return window;
     }
 
     /**
-     * Returns a child by index.
+     * Returns the component ID used by its parent.
      *
-     * @param index zero-based child index
-     * @return child at the specified position
+     * @return component ID, or {@code null} when detached and not explicitly assigned
      */
-    public JFComponent getChild(int index) {
-        return childList.get(index);
+    public String getID() {
+        return id;
     }
 
     /**
-     * Returns the first child component.
+     * Updates the component ID and re-registers it in the parent's child storage.
      *
-     * @return first child in the list
+     * @param id new non-blank component ID
+     * @return current component for fluent calls
      */
-    public JFComponent getChild() {
-        return childList.getFirst();
+    public JFComponent setID(@NotNull String id) {
+        String newId = validateComponentID(id);
+        if (Objects.equals(this.id, newId)) return this;
+
+        JFComponent duplicate = findDuplicateIDInTree(newId, this);
+        if (duplicate != null) {
+            throw new IllegalArgumentException("A component with ID '" + newId + "' already exists in this component tree.");
+        }
+
+        updateRegisteredID(newId);
+        userDefinedID = true;
+        return this;
     }
 
     /**
@@ -326,16 +336,13 @@ public abstract class JFComponent {
     }
 
     /**
-     * Attaches this component to a parent for the first time.
-     * <p>
-     * This is the hook used by the internal child-attachment helpers after the child has been accepted.
-     * It stores the parent reference, updates absolute coordinates based on the current local
-     * position and marks the branch as needing layout recalculation.
+     * Mounts this component inside a component tree.
      *
-     * @param parent parent component receiving this child
+     * @param parent parent component
+     * @param window owning window
      * @throws IllegalStateException if the component was already attached to a different parent
      */
-    protected void init(@NotNull JFComponent parent, @NotNull JFWindow window) {
+    public final void mount(@NotNull JFComponent parent, @NotNull JFWindow window) {
         Validator.assertTrue(this.parent == null, "Component already has a parent.");
 
         setWindow(window);
@@ -355,7 +362,7 @@ public abstract class JFComponent {
         if (parent != null)
             componentBox.setLocation(parent.componentBox.x + localX, parent.componentBox.y + localY);
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getTraversalChildren()) {
             child.updateAbsolutePositionFromLocal();
         }
     }
@@ -453,40 +460,130 @@ public abstract class JFComponent {
         return this;
     }
 
-    /**
-     * Attaches a child component to this component and initializes the parent-child relationship.
-     * <p>
-     * Root windows are forbidden as children because they already represent the top-level host
-     * surface of a component tree. Public child-management APIs are intentionally implemented by
-     * composition interfaces on concrete components, while this helper keeps the shared framework
-     * mechanics in one place.
-     *
-     * @param child child component to attach
-     * @return current component for fluent internal composition
-     */
-    protected final JFComponent attachChild(@NotNull JFComponent child) {
-        JFComponent nonNullChild = Objects.requireNonNull(child, "Cannot add a null child component");
-
-        if (nonNullChild.getClass() == JFWindow.class) throw new RuntimeException("Cannot add JFWindow to a JFComponent");
-
-        childList.add(nonNullChild);
-        nonNullChild.init(this, window);
-        invalidateLayout();
-        return this;
+    public final void validateMountableComponent(@NotNull JFComponent component) {
+        Objects.requireNonNull(component, "Cannot add a null child component");
+        if (component.getClass() == JFWindow.class) throw new RuntimeException("Cannot add JFWindow to a JFComponent");
     }
 
-    /**
-     * Removes every currently attached child from this component.
-     * <p>
-     * The detached children keep their own subtree intact, but they no longer belong to the current
-     * parent. This helper is mainly used by single-child containers when replacing their content.
-     */
-    protected final void clearChildren() {
-        for (JFComponent child : childList) {
-            child.parent = null;
+    public final String resolveMountedComponentID(@Nullable String requestedId, JFComponent child) {
+        if (requestedId != null) {
+            String userId = validateComponentID(requestedId);
+            assertIDIsUniqueInTree(userId, child);
+            return userId;
         }
-        childList.clear();
+
+        if (child.id != null && !child.id.isBlank()) {
+            String currentId = validateComponentID(child.id);
+            if (child.userDefinedID) {
+                assertIDIsUniqueInTree(currentId, child);
+                return currentId;
+            }
+
+            if (findDuplicateIDInTree(currentId, child) == null) {
+                return currentId;
+            }
+        }
+
+        return generateUniqueRandomID(child);
+    }
+
+    public static String validateComponentID(@NotNull String id) {
+        String nonBlankId = Objects.requireNonNull(id, "Component ID cannot be null").trim();
+        if (nonBlankId.isEmpty()) {
+            throw new IllegalArgumentException("Component ID cannot be blank.");
+        }
+        return nonBlankId;
+    }
+
+    private void assertIDIsUniqueInTree(String id, JFComponent ignoredComponent) {
+        if (findDuplicateIDInTree(id, ignoredComponent) != null) {
+            throw new IllegalArgumentException("A component with ID '" + id + "' already exists in this component tree.");
+        }
+    }
+
+    public final void applyMountedID(@NotNull String id, boolean userDefined) {
+        this.id = validateComponentID(id);
+        this.userDefinedID = userDefined || this.userDefinedID;
+    }
+
+    public final void detachFromParent() {
+        parent = null;
+    }
+
+    public final void markLayoutDirty() {
         invalidateLayout();
+    }
+
+    private String generateUniqueRandomID(JFComponent ignoredComponent) {
+        String randomId;
+        do {
+            randomId = Long.toUnsignedString(ThreadLocalRandom.current().nextLong());
+        } while (findDuplicateIDInTree(randomId, ignoredComponent) != null);
+
+        return randomId;
+    }
+
+    private JFComponent findDuplicateIDInTree(String id, JFComponent ignoredComponent) {
+        JFComponent root = getRoot();
+        return root.findComponentByID(id, ignoredComponent);
+    }
+
+    private JFComponent findComponentByID(String id, JFComponent ignoredComponent) {
+        if (this != ignoredComponent && id.equals(this.id)) return this;
+
+        for (JFComponent child : getTraversalChildren()) {
+            JFComponent match = child.findComponentByID(id, ignoredComponent);
+            if (match != null) return match;
+        }
+
+        return null;
+    }
+
+    private JFComponent getRoot() {
+        JFComponent root = this;
+        while (root.parent != null) {
+            root = root.parent;
+        }
+        return root;
+    }
+
+    private void updateRegisteredID(String newId) {
+        String oldId = this.id;
+        if (parent instanceof JFChildComponent childParent) {
+            childParent.updateChildID(this, oldId, newId);
+        }
+
+        this.id = newId;
+    }
+
+    public final void ensureMountedBranchHasUniqueIDs() {
+        if (id != null) {
+            if (userDefinedID) {
+                assertIDIsUniqueInTree(id, this);
+            } else if (findDuplicateIDInTree(id, this) != null) {
+                updateRegisteredID(generateUniqueRandomID(this));
+            }
+        }
+
+        for (JFComponent child : new ArrayList<>(getTraversalChildren())) {
+            child.ensureMountedBranchHasUniqueIDs();
+        }
+    }
+
+    private Collection<JFComponent> getTraversalChildren() {
+        if (this instanceof JFChildComponent childComponent) {
+            return childComponent.getChildList();
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<JFComponent> getTraversalChildrenInReverseOrder() {
+        if (this instanceof JFChildComponent childComponent) {
+            return childComponent.getChildListInReverseOrder();
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -508,7 +605,7 @@ public abstract class JFComponent {
      * Unlike {@link #invalidateLayout()}, this method only propagates downward.
      */
     private void invalidateChildLayouts() {
-        for (JFComponent child : childList) {
+        for (JFComponent child : getTraversalChildren()) {
             child.layoutDirty = true;
             child.invalidateChildLayouts();
         }
@@ -535,13 +632,13 @@ public abstract class JFComponent {
             layoutDirty = false;
 
             if (layoutRequireChild)
-                for (JFComponent child : childList)
+                for (JFComponent child : getTraversalChildren())
                     if (child.participatesInLayout())
                         child.layout();
 
             layoutRecalculate();
 
-            for (JFComponent child : childList)
+            for (JFComponent child : getTraversalChildren())
                 if (child.participatesInLayout())
                     child.layout();
 
@@ -606,7 +703,7 @@ public abstract class JFComponent {
 
         validateWithinParent();
 
-        for (JFComponent child : childList)
+        for (JFComponent child : getTraversalChildren())
             if (child.participatesInLayout())
                 child.validateTree();
     }
@@ -677,7 +774,7 @@ public abstract class JFComponent {
 
         design(g);
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getTraversalChildren()) {
             child.draw(g);
         }
     }
@@ -729,8 +826,7 @@ public abstract class JFComponent {
         if (!canDraw()) return null;
         if (clipChildrenToBounds && !componentBox.contains(x, y)) return null;
 
-        for (int i = childList.size() - 1; i >= 0; i--) {
-            JFComponent child = childList.get(i);
+        for (JFComponent child : getTraversalChildrenInReverseOrder()) {
             JFComponent target = child.findTopMostAt(x, y);
             if (target != null) return target;
         }

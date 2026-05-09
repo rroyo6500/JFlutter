@@ -1,15 +1,17 @@
 package rroyo.JF.JFComponents.ComplexComponents;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Enums.SelectionType;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
 import rroyo.JF.JFComponents.BaseComponent.JFComplexComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFMultiChildComponent;
 import rroyo.JF.JFComponents.SimpleComponents.JFColumn;
 import rroyo.JF.JFComponents.SimpleComponents.JFSizedBox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Component container that groups round selection controls into a mutually exclusive set.
@@ -37,13 +39,27 @@ public class JFGroup extends JFComplexComponent implements JFMultiChildComponent
     }
 
     @Override
+    public Map<String, JFComponent> getChildMap() {
+        return column.getChildMap();
+    }
+
+    @Override
     public JFGroup addChild(@NotNull JFComponent child) {
+        return addChild(null, child);
+    }
+
+    @Override
+    public JFGroup addChild(@Nullable String id, @NotNull JFComponent child) {
         if (!(child instanceof JFSelectionControl selector)) {
             throw new IllegalArgumentException("JFGroup only accepts JFSelectionControl children.");
         }
 
         if (selector.getType() != SelectionType.ROUND) {
             throw new IllegalArgumentException("JFGroup only accepts ROUND selection controls.");
+        }
+
+        if (id != null) {
+            selector.setID(id);
         }
 
         column.addChilds(

@@ -48,7 +48,7 @@ public class JFColumn extends JFFlex {
         int maxChildWidth = 0;
         int activeChildCount = 0;
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getChildList()) {
             if (!child.isActive()) continue;
 
             totalChildrenHeight += child.getHeight();
@@ -75,7 +75,7 @@ public class JFColumn extends JFFlex {
         float currentY = fChildPos[0];
         float gap = fChildPos[1];
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getChildList()) {
             if (!child.isActive()) continue;
 
             int childX = switch (caa) {

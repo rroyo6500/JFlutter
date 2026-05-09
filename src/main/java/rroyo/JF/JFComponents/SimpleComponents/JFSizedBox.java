@@ -2,7 +2,7 @@ package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFSingleChildComponent;
 
 import java.awt.*;
 
@@ -15,6 +15,8 @@ import java.awt.*;
  * @author rroyo
  */
 public class JFSizedBox extends JFComponent implements JFSingleChildComponent<JFSizedBox> {
+
+    private final SingleChild childStore = new SingleChild();
 
     /**
      * Creates a fixed-size box with the requested dimensions.
@@ -33,10 +35,8 @@ public class JFSizedBox extends JFComponent implements JFSingleChildComponent<JF
      * @return current size box
      */
     @Override
-    public JFSizedBox addChild(@NotNull JFComponent child) {
-        clearChildren();
-        attachChild(child);
-        return this;
+    public SingleChild getChildStore() {
+        return childStore;
     }
 
     /**

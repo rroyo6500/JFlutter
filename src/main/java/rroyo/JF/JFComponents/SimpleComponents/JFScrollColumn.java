@@ -2,9 +2,11 @@ package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFMultiChildComponent;
 
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Vertical layout container that always wraps its full content height.
@@ -15,6 +17,8 @@ import java.awt.*;
  * @author rroyo
  */
 public class JFScrollColumn extends JFComponent implements JFMultiChildComponent<JFScrollColumn> {
+
+    private final Map<String, JFComponent> childMap = new LinkedHashMap<>();
 
     /**
      * Creates an empty scroll column.
@@ -30,23 +34,8 @@ public class JFScrollColumn extends JFComponent implements JFMultiChildComponent
      * @return current scroll column
      */
     @Override
-    public JFScrollColumn addChild(@NotNull JFComponent child) {
-        attachChild(child);
-        return this;
-    }
-
-    /**
-     * Adds multiple children in order.
-     *
-     * @param children children to append
-     * @return current scroll column
-     */
-    @Override
-    public JFScrollColumn addChilds(@NotNull JFComponent... children) {
-        for (JFComponent child : children) {
-            addChild(child);
-        }
-        return this;
+    public Map<String, JFComponent> getChildMap() {
+        return childMap;
     }
 
     /**
@@ -57,7 +46,7 @@ public class JFScrollColumn extends JFComponent implements JFMultiChildComponent
         int totalHeight = 0;
         int maxWidth = 0;
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getChildList()) {
             if (!child.isActive()) continue;
 
             child.setPosition(0, totalHeight);
