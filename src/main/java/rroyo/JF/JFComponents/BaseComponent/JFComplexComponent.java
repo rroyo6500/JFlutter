@@ -1,6 +1,9 @@
 package rroyo.JF.JFComponents.BaseComponent;
 
+import rroyo.JF.JFComponents.ChildComponents.JFSingleChildComponent;
+
 import java.awt.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -21,6 +24,7 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
      * Root component representing the internal visual content of this complex component.
      */
     private JFComponent content;
+    private final SingleChild childStore = new SingleChild();
 
     /**
      * Creates an empty complex component.
@@ -47,7 +51,7 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
     protected JFComplexComponent(Supplier<JFComponent> contentFactory, boolean layoutRequireChild) {
         super(layoutRequireChild);
         this.content = Objects.requireNonNull(contentFactory.get(), "contentFactory returned null content");
-        attachChild(content);
+        JFSingleChildComponent.super.addChild(content);
     }
 
     /**
@@ -57,6 +61,26 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
      */
     public JFComponent getContent() {
         return content;
+    }
+
+    @Override
+    public SingleChild getChildStore() {
+        return childStore;
+    }
+
+    @Override
+    public List<JFComponent> getChildList() {
+        return JFSingleChildComponent.super.getChildList();
+    }
+
+    @Override
+    public void updateChildID(JFComponent child, String oldId, String newId) {
+        JFSingleChildComponent.super.updateChildID(child, oldId, newId);
+    }
+
+    @Override
+    public void clearChildren() {
+        JFSingleChildComponent.super.clearChildren();
     }
 
     @Override
@@ -103,9 +127,8 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
      */
     @Override
     public JFComplexComponent addChild(JFComponent child) {
-        clearChildren();
         this.content = child;
-        attachChild(child);
+        JFSingleChildComponent.super.addChild(child);
         return this;
     }
 
@@ -231,7 +254,7 @@ public abstract class JFComplexComponent extends JFComponent implements JFSingle
      */
     private void mountContent(JFComponent newContent) {
         this.content = newContent;
-        attachChild(newContent);
+        JFSingleChildComponent.super.addChild(newContent);
     }
 
     /**

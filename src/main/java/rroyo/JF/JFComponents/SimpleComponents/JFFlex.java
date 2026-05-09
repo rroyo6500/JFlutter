@@ -1,10 +1,14 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Enums.CrossAxisAlignment;
 import rroyo.JF.Enums.MainAxisAlignment;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFMultiChildComponent;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Abstract base class for row- and column-style flex layouts.
@@ -16,6 +20,8 @@ import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
  * @author rroyo
  */
 public abstract class JFFlex extends JFComponent implements JFMultiChildComponent<JFFlex> {
+
+    private final Map<String, JFComponent> childMap = new LinkedHashMap<>();
 
     /**
      * Alignment strategy used on the main axis of the layout.
@@ -60,6 +66,11 @@ public abstract class JFFlex extends JFComponent implements JFMultiChildComponen
         return this;
     }
 
+    @Override
+    public Map<String, JFComponent> getChildMap() {
+        return childMap;
+    }
+
     /**
      * Adds a single child while enforcing the structural rules of flex containers.
      *
@@ -69,11 +80,15 @@ public abstract class JFFlex extends JFComponent implements JFMultiChildComponen
      */
     @Override
     public JFFlex addChild(@NotNull JFComponent child) {
+        return addChild(null, child);
+    }
+
+    @Override
+    public JFFlex addChild(@Nullable String id, @NotNull JFComponent child) {
         if (child.getClass() == JFCenter.class)
             throw new IllegalArgumentException("Error: Cannot add JFCenter in to a " + this.getClass().getSimpleName());
 
-        attachChild(child);
-        return this;
+        return JFMultiChildComponent.super.addChild(id, child);
     }
 
     /**

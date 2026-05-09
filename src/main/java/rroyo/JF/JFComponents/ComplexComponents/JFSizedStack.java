@@ -1,11 +1,14 @@
 package rroyo.JF.JFComponents.ComplexComponents;
 
+import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Enums.Alignment;
 import rroyo.JF.JFComponents.BaseComponent.JFComplexComponent;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFMultiChildComponent;
 import rroyo.JF.JFComponents.SimpleComponents.JFSizedBox;
 import rroyo.JF.JFComponents.SimpleComponents.JFStack;
+
+import java.util.Map;
 
 /**
  * Convenience component that combines a fixed-size box with a stack layout.
@@ -32,6 +35,11 @@ public class JFSizedStack extends JFComplexComponent implements JFMultiChildComp
         this.stack = stack;
     }
 
+    @Override
+    public Map<String, JFComponent> getChildMap() {
+        return stack.getChildMap();
+    }
+
     /**
      * Forwards a child to the internal stack hosted inside the sized box.
      *
@@ -41,6 +49,12 @@ public class JFSizedStack extends JFComplexComponent implements JFMultiChildComp
     @Override
     public JFSizedStack addChild(JFComponent child) {
         stack.addChild(child);
+        return this;
+    }
+
+    @Override
+    public JFSizedStack addChild(@Nullable String id, JFComponent child) {
+        stack.addChild(id, child);
         return this;
     }
 

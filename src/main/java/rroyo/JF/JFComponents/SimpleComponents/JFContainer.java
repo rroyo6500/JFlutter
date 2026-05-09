@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Decorations.Decoration;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFSingleChildComponent;
 
 import java.awt.*;
 
@@ -18,6 +18,8 @@ import java.awt.*;
  * @author rroyo
  */
 public class JFContainer extends JFComponent implements JFSingleChildComponent<JFContainer> {
+
+    private final SingleChild childStore = new SingleChild();
 
     /**
      * Decoration responsible for painting the visual surface of the container.
@@ -76,10 +78,8 @@ public class JFContainer extends JFComponent implements JFSingleChildComponent<J
      * @return current container
      */
     @Override
-    public JFContainer addChild(@NotNull JFComponent child) {
-        clearChildren();
-        attachChild(child);
-        return this;
+    public SingleChild getChildStore() {
+        return childStore;
     }
 
     /**

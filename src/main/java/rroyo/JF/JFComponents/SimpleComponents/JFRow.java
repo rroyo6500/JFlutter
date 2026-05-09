@@ -48,7 +48,7 @@ public class JFRow extends JFFlex {
         int maxChildHeight = 0;
         int activeChildCount = 0;
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getChildList()) {
             if (!child.isActive()) continue;
 
             totalChildrenWidth += child.getWidth();
@@ -75,7 +75,7 @@ public class JFRow extends JFFlex {
         float currentX = fChildPos[0];
         float gap = fChildPos[1];
 
-        for (JFComponent child : childList) {
+        for (JFComponent child : getChildList()) {
             if (!child.isActive()) continue;
 
             int childY = switch (caa) {

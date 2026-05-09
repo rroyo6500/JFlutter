@@ -1,11 +1,12 @@
 package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.HoverEventTypes;
 import rroyo.JF.Enums.KeyEventTypes;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFMultiChildComponent;
 import rroyo.JF.JFEvents.JFActionComponent;
 import rroyo.JF.JFEvents.JFActionEvent;
 import rroyo.JF.JFEvents.JFFocusTargetComponent;
@@ -23,7 +24,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Root component that hosts a framework component tree inside a Swing window.
@@ -40,6 +43,8 @@ import java.util.List;
  * @author rroyo
  */
 public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWindow> {
+
+    private final Map<String, JFComponent> childMap = new LinkedHashMap<>();
 
     /**
      * Background color used to clear the full window surface before drawing children.
@@ -465,6 +470,11 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
         return this;
     }
 
+    @Override
+    public Map<String, JFComponent> getChildMap() {
+        return childMap;
+    }
+
     /**
      * Adds a root child and makes it the active one.
      * <p>
@@ -480,6 +490,11 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
         return addChild(child, true);
     }
 
+    @Override
+    public JFWindow addChild(@Nullable String id, @NotNull JFComponent child) {
+        return addChild(id, child, true);
+    }
+
     /**
      * Adds a root child and optionally switches the window to it immediately.
      *
@@ -488,12 +503,16 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
      * @return current window for fluent composition
      */
     public JFWindow addChild(@NotNull JFComponent child, boolean load) {
-        attachChild(child);
+        return addChild(null, child, load);
+    }
+
+    public JFWindow addChild(@Nullable String id, @NotNull JFComponent child, boolean load) {
+        JFMultiChildComponent.super.addChild(id, child);
         if (load) {
             hoveredComponent = null;
             focusedComponent = null;
             overlayComponents.clear();
-            loadedChild = childList.size() - 1;
+            loadedChild = getChildList().size() - 1;
         }
         window.repaint();
         return this;
@@ -512,7 +531,7 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
         }
 
         if (children.length > 0) {
-            loadChild(childList.size() - 1);
+            loadChild(getChildList().size() - 1);
         }
 
         return this;
@@ -526,8 +545,9 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
      * @throws IndexOutOfBoundsException when the index does not refer to an attached root child
      */
     public JFWindow loadChild(int childIndex) {
-        if (childIndex < 0 || childIndex >= childList.size()) {
-            throw new IndexOutOfBoundsException("Child index " + childIndex + " is out of bounds for " + childList.size() + " root children.");
+        List<JFComponent> children = getChildList();
+        if (childIndex < 0 || childIndex >= children.size()) {
+            throw new IndexOutOfBoundsException("Child index " + childIndex + " is out of bounds for " + children.size() + " root children.");
         }
 
         hoveredComponent = null;
@@ -558,8 +578,9 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
      */
     public JFWindow loadChild(JFComponent child) {
         Validator.notNull(child, "child is null");
-        Validator.assertTrue(childList.contains(child), "child is not a valid child.");
-        int childIndex = childList.indexOf(child);
+        List<JFComponent> children = getChildList();
+        Validator.assertTrue(children.contains(child), "child is not a valid child.");
+        int childIndex = children.indexOf(child);
         return loadChild(childIndex);
     }
 
@@ -569,11 +590,12 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
      * @return active root child, or {@code null} when the window has no child
      */
     public JFComponent getLoadedChild() {
-        if (loadedChild < 0 || loadedChild >= childList.size()) {
+        List<JFComponent> children = getChildList();
+        if (loadedChild < 0 || loadedChild >= children.size()) {
             return null;
         }
 
-        return childList.get(loadedChild);
+        return children.get(loadedChild);
     }
 
     /**

@@ -3,9 +3,11 @@ package rroyo.JF.JFComponents.SimpleComponents;
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.Enums.Alignment;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFMultiChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFMultiChildComponent;
 
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Layered layout container that places all children within the same shared bounds.
@@ -17,6 +19,8 @@ import java.awt.*;
  * @author rroyo
  */
 public class JFStack extends JFComponent implements JFMultiChildComponent<JFStack> {
+
+    private final Map<String, JFComponent> childMap = new LinkedHashMap<>();
 
     /**
      * Alignment rule used to position children automatically inside the stack.
@@ -40,23 +44,8 @@ public class JFStack extends JFComponent implements JFMultiChildComponent<JFStac
      * @return current stack
      */
     @Override
-    public JFStack addChild(@NotNull JFComponent child) {
-        attachChild(child);
-        return this;
-    }
-
-    /**
-     * Adds multiple children to the stack in the given order.
-     *
-     * @param children children to layer inside the stack
-     * @return current stack
-     */
-    @Override
-    public JFStack addChilds(@NotNull JFComponent... children) {
-        for (JFComponent child : children) {
-            addChild(child);
-        }
-        return this;
+    public Map<String, JFComponent> getChildMap() {
+        return childMap;
     }
 
     /**
@@ -73,7 +62,7 @@ public class JFStack extends JFComponent implements JFMultiChildComponent<JFStac
         else {
             int maxWidth = 0;
             int maxHeight = 0;
-            for (JFComponent child : childList) {
+            for (JFComponent child : getChildList()) {
                 if (!child.isActive()) continue;
 
                 maxWidth = Math.max(maxWidth, child.getWidth());
@@ -83,7 +72,7 @@ public class JFStack extends JFComponent implements JFMultiChildComponent<JFStac
         }
 
         if (alignment == Alignment.CUSTOM) return;
-        for (JFComponent child : childList) {
+        for (JFComponent child : getChildList()) {
             if (!child.isActive()) continue;
 
             Point position = alignment.calculatePosition(this.componentBox, child.getWidth(), child.getHeight());

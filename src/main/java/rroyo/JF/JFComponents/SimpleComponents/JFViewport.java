@@ -2,7 +2,7 @@ package rroyo.JF.JFComponents.SimpleComponents;
 
 import org.jetbrains.annotations.NotNull;
 import rroyo.JF.JFComponents.BaseComponent.JFComponent;
-import rroyo.JF.JFComponents.BaseComponent.JFSingleChildComponent;
+import rroyo.JF.JFComponents.ChildComponents.JFSingleChildComponent;
 
 import java.awt.*;
 
@@ -17,6 +17,7 @@ import java.awt.*;
  */
 public class JFViewport extends JFComponent implements JFSingleChildComponent<JFViewport> {
 
+    private final SingleChild childStore = new SingleChild();
     private int scrollX;
     private int scrollY;
 
@@ -75,10 +76,14 @@ public class JFViewport extends JFComponent implements JFSingleChildComponent<JF
     }
 
     @Override
+    public SingleChild getChildStore() {
+        return childStore;
+    }
+
+    @Override
     public JFViewport addChild(@NotNull JFComponent child) {
-        clearChildren();
         child.setOverflowAllowed(true);
-        attachChild(child);
+        JFSingleChildComponent.super.addChild(child);
         positionChild();
         return this;
     }
@@ -103,7 +108,8 @@ public class JFViewport extends JFComponent implements JFSingleChildComponent<JF
         try {
             g2d.clipRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
             design(g2d);
-            for (JFComponent child : childList) {
+            JFComponent child = getChild();
+            if (child != null) {
                 child.drawTree(g2d);
             }
         } finally {
@@ -116,10 +122,11 @@ public class JFViewport extends JFComponent implements JFSingleChildComponent<JF
     }
 
     private void positionChild() {
-        if (childList.isEmpty()) {
+        JFComponent child = getChild();
+        if (child == null) {
             return;
         }
 
-        childList.getFirst().setPosition(-scrollX, -scrollY);
+        child.setPosition(-scrollX, -scrollY);
     }
 }
