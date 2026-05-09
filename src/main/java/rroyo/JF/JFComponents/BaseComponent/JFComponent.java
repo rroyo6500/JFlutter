@@ -855,13 +855,13 @@ public abstract class JFComponent {
      */
     @Override
     public String toString() {
-        String parentClass = parent == null ? "null" : parent.getClass().getSimpleName();
-
-        return String.format("%s{width: %d, height: %d, Position: %s, ParentClass: %s}",
-                this.getClass().getSimpleName(),
-                componentBox.width, componentBox.height,
-                new Point(componentBox.x, componentBox.y),
-                parentClass
-        );
+        if (this instanceof JFChildComponent JFCC) {
+            return JFCC.getComponentTree();
+        } else {
+            return String.format("%s [id=%s]",
+                    this.getClass().getSimpleName(),
+                    this.getID()
+            );
+        }
     }
 }
