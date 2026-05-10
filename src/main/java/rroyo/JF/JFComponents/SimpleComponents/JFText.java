@@ -105,32 +105,27 @@ public class JFText extends JFComponent {
      */
     @Override
     protected void layoutRecalculate() {
-        FontRenderContext frc = new FontRenderContext(null, true, true);
-
-        Rectangle2D bounds = font.getStringBounds(text, frc);
-
-        int naturalWidth = (int) Math.ceil(bounds.getWidth());
         FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
-        int naturalHeight = Math.max((int) Math.ceil(bounds.getHeight()), metrics.getHeight());
-        naturalWidth = Math.max(naturalWidth, metrics.stringWidth(text));
+
+        String[] lines = text.split("\n", -1);
+
+        int maxLineWidth = 0;
+        for (String line : lines) {
+            maxLineWidth = Math.max(maxLineWidth, metrics.stringWidth(line));
+        }
+
+        int naturalWidth = maxLineWidth;
+
+        int naturalHeight = lines.length * metrics.getHeight();
 
         int width = naturalWidth;
         int height = naturalHeight;
-        if (parent != null && parent.getWidth() > 0) {
-            int availableWidth = parent.getWidth();
-            if (!(parent instanceof JFCenter))
-                availableWidth = Math.max(0, parent.getWidth() - localX);
 
-            width = Math.min(naturalWidth, availableWidth);
-        }
+        if (parent != null && parent.getWidth() > 0)
+            width = Math.clamp(parent.getWidth() - localX, 0, naturalWidth);
 
-        if (parent != null && parent.getHeight() > 0) {
-            int availableHeight = parent.getHeight();
-            if (!(parent instanceof JFCenter))
-                availableHeight = Math.max(0, parent.getHeight() - localY);
-
-            height = Math.min(naturalHeight, availableHeight);
-        }
+        if (parent != null && parent.getHeight() > 0)
+            height = Math.clamp(parent.getHeight() - localY, 0, naturalHeight);
 
         setSize(width, height);
     }
@@ -153,7 +148,16 @@ public class JFText extends JFComponent {
         g2d.clipRect(componentBox.x, componentBox.y, componentBox.width, componentBox.height);
         g2d.setColor(color);
         g2d.setFont(font);
-        g2d.drawString(text, componentBox.x, componentBox.y + Math.min(metrics.getAscent(), componentBox.height));
+
+        String[] lines = text.split("\n", -1);
+        int lineHeight = metrics.getHeight();
+        int ascent = metrics.getAscent();
+
+        for (int i = 0; i < lines.length; i++) {
+            int yOffset = componentBox.y + ascent + (i * lineHeight);
+            g2d.drawString(lines[i], componentBox.x, yOffset);
+        }
+
         g2d.dispose();
     }
 
