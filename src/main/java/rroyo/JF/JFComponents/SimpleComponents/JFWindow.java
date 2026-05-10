@@ -185,6 +185,10 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
         setupTimer();
     }
 
+    public void close() {
+        window.dispose();
+    }
+
     /**
      * Starts the repaint timer used to keep Swing asking the panel for new frames.
      */
