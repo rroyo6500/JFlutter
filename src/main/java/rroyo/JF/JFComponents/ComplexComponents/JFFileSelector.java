@@ -1,5 +1,7 @@
 package rroyo.JF.JFComponents.ComplexComponents;
 
+import rroyo.JF.Decorations.Border;
+import rroyo.JF.Decorations.Decoration;
 import rroyo.JF.Enums.ActionEventTypes;
 import rroyo.JF.Enums.MouseButtons;
 import rroyo.JF.JFComponents.BaseComponent.JFComplexComponent;
@@ -25,7 +27,10 @@ public class JFFileSelector extends JFComplexComponent implements JFInteractiveC
 
     private JFFileSelector(int width, int height, JFText text) {
         super(() ->
-                new JFContainer(width, height, Color.lightGray).addChild(
+                new JFContainer(width, height,
+                        new Decoration(Color.lightGray)
+                                .setBorder(new Border(Color.blue, 1))
+                ).addChild(
                     new JFCenter(text)
                 )
         );
@@ -38,17 +43,19 @@ public class JFFileSelector extends JFComplexComponent implements JFInteractiveC
 
             if (e.getAction().equals(ActionEventTypes.CLICK) && e.getAction().getButton().equals(MouseButtons.LEFT)) {
                 FileDialog fd = new FileDialog((Frame) null, "Select a file...", FileDialog.LOAD);
+                fd.setSize(800, 400);
                 fd.setVisible(true);
 
                 if (fd.getFile() != null) {
                     selectedFile = new File(fd.getDirectory(), fd.getFile());
 
-                    this.redesign((self, oldContent) -> {
+                    this.redesign((oldContent) -> {
+                        JFContainer oldContainer = (JFContainer) oldContent;
                         textComponent = new JFText(selectedFile.getName());
                         return new JFContainer(
                                 oldContent.getWidth(),
                                 oldContent.getHeight(),
-                                Color.green
+                                oldContainer.getDecoration().setColor(Color.green)
                         ).addChild(
                                 new JFCenter(textComponent)
                         );
