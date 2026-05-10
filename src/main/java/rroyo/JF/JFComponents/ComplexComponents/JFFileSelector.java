@@ -29,7 +29,7 @@ public class JFFileSelector extends JFComplexComponent implements JFInteractiveC
         super(() ->
                 new JFContainer(width, height,
                         new Decoration(Color.lightGray)
-                                .setBorder(new Border(Color.blue, 1))
+                                .setBorder(new Border(Color.black, 1))
                 ).addChild(
                     new JFCenter(text)
                 )
