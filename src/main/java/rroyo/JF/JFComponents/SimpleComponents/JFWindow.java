@@ -132,7 +132,7 @@ public class JFWindow extends JFComponent implements JFMultiChildComponent<JFWin
      * @param title native window title
      */
     public JFWindow(int width, int height, String title) {
-        this(60, width, height, title, JFrame.EXIT_ON_CLOSE);
+        this(15, width, height, title, JFrame.EXIT_ON_CLOSE);
     }
 
     /**

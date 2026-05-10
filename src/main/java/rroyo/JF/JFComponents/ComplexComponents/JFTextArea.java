@@ -182,10 +182,6 @@ public class JFTextArea extends JFComplexComponent implements JFInteractiveCompo
                     text.deleteCharAt(cursorPosition);
                 }
             }
-            case KeyEvent.VK_ENTER -> {
-                text.insert(cursorPosition, '\n');
-                cursorPosition++;
-            }
             default -> {
                 return;
             }
