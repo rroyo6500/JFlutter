@@ -7,8 +7,13 @@
         <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
+    <option name="enabledProfiles">
+      <list>
+        <option value="con-sandbox" />
+      </list>
+    </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" project-jdk-name="openjdk-23" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" project-jdk-name="openjdk-26" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>
