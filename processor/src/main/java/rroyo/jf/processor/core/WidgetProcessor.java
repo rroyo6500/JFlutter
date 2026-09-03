@@ -1,0 +1,543 @@
+package rroyo.jf.processor.core;
+
+import rroyo.jf.annotations.JFWidget;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.Filer;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.util.TypeKindVisitor9;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Generates a static factory facade for JFlutter widgets.
+ *
+ * <p>Discovery is inheritance-based: every concrete accessible class that is
+ * a subtype of {@code rroyo.jf.widgets.basewidgets.Widget} is considered a
+ * widget. {@link JFWidget} is optional and only configures the generated
+ * facade.</p>
+ */
+public class WidgetProcessor extends AbstractProcessor {
+
+    private static final String WIDGET_FQN = "rroyo.jf.widgets.basewidgets.Widget";
+    private static final String GENERATED_PACKAGE = "rroyo.jf.generated";
+    private static final String GENERATED_CLASS = "Widgets";
+    private static final String GENERATED_FQN = GENERATED_PACKAGE + "." + GENERATED_CLASS;
+
+    private final Map<String, WidgetData> widgets = new LinkedHashMap<>();
+    private boolean initializedInheritedFactories;
+    private boolean codeGenerated;
+
+    private TypeElement widgetType;
+    private Messager messager;
+
+    private static final class WidgetData {
+        private final TypeElement type;
+        private final String factoryName;
+        private final boolean generateFactory;
+        private WidgetData(TypeElement type, String factoryName, boolean generateFactory) {
+            this.type = type;
+            this.factoryName = factoryName;
+            this.generateFactory = generateFactory;
+        }
+
+        private String qualifiedName() {
+            return type.getQualifiedName().toString();
+        }
+    }
+
+    private static final class FactoryData {
+        private final String name;
+        private final List<? extends VariableElement> parameters;
+
+        private FactoryData(String name, List<? extends VariableElement> parameters) {
+            this.name = name;
+            this.parameters = parameters;
+        }
+
+        private String signature(TypeRenderer renderer) {
+            StringBuilder out = new StringBuilder(name).append('(');
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i > 0) out.append(", ");
+                out.append(renderer.render(parameters.get(i).asType()));
+            }
+            return out.append(')').toString();
+        }
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        messager = processingEnv.getMessager();
+        widgetType = processingEnv.getElementUtils().getTypeElement(WIDGET_FQN);
+
+        if (widgetType == null) {
+            messager.printMessage(Diagnostic.Kind.ERROR,
+                    "No se ha encontrado " + WIDGET_FQN + ". " +
+                            "WidgetProcessor necesita el módulo core de JFlutter en el classpath.");
+        }
+    }
+
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        // We intentionally run without requiring @JFWidget. The annotation is
+        // optional configuration, not the discovery mechanism.
+        return Set.of("*");
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (widgetType == null || codeGenerated || roundEnv.processingOver()) {
+            return false;
+        }
+
+        if (!initializedInheritedFactories) {
+            initializeInheritedFactories();
+            initializedInheritedFactories = true;
+        }
+
+        for (Element root : roundEnv.getRootElements()) {
+            collectWidgets(root);
+        }
+
+        // Widgets generated by normal source compilation are available in the
+        // first processing round. We deliberately generate only once because a
+        // Java source file cannot be recreated later under the same FQN.
+        if (!widgets.isEmpty()) {
+            generateWidgetClass();
+            codeGenerated = true;
+        }
+
+        return false;
+    }
+
+    private void initializeInheritedFactories() {
+        TypeElement inheritedWidgets = processingEnv.getElementUtils().getTypeElement(GENERATED_FQN);
+        if (inheritedWidgets == null) {
+            return;
+        }
+
+        TypeRenderer renderer = new TypeRenderer();
+        for (Element element : inheritedWidgets.getEnclosedElements()) {
+            if (element.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+
+            ExecutableElement method = (ExecutableElement) element;
+            Set<Modifier> modifiers = method.getModifiers();
+            if (!modifiers.contains(Modifier.PUBLIC) || !modifiers.contains(Modifier.STATIC)) {
+                continue;
+            }
+
+            TypeMirror returnType = method.getReturnType();
+            if (!isWidgetType(returnType) || method.getTypeParameters().size() > 0 || containsTypeVariable(returnType)) {
+                continue;
+            }
+
+            String returnFqn = processingEnv.getTypeUtils().erasure(returnType).toString();
+            TypeElement returnElement = processingEnv.getElementUtils().getTypeElement(returnFqn);
+            if (returnElement == null) {
+                continue;
+            }
+
+            if (!widgets.containsKey(returnElement.getQualifiedName().toString())) {
+                widgets.put(returnElement.getQualifiedName().toString(),
+                        new WidgetData(returnElement, method.getSimpleName().toString(), true));
+            }
+        }
+    }
+
+    private void collectWidgets(Element element) {
+        if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.ENUM) {
+            if (element.getKind() == ElementKind.CLASS) {
+                collectWidgetType((TypeElement) element);
+            }
+
+            for (Element enclosed : element.getEnclosedElements()) {
+                collectWidgets(enclosed);
+            }
+        }
+    }
+
+    private void collectWidgetType(TypeElement type) {
+        if (widgetType == null || !isWidgetType(type.asType())) {
+            return;
+        }
+
+        // Widget itself is not a concrete widget.
+        if (type.getQualifiedName().contentEquals(WIDGET_FQN)) {
+            return;
+        }
+
+        Set<Modifier> modifiers = type.getModifiers();
+        if (modifiers.contains(Modifier.ABSTRACT) || !modifiers.contains(Modifier.PUBLIC)) {
+            warn(type, "Widget omitido de Widgets: debe ser una clase public y no abstracta.");
+            return;
+        }
+
+        if (type.getNestingKind() != NestingKind.TOP_LEVEL && !modifiers.contains(Modifier.STATIC)) {
+            warn(type, "Widget omitido de Widgets: una clase interna debe ser static.");
+            return;
+        }
+
+        JFWidget config = type.getAnnotation(JFWidget.class);
+        String factoryName = type.getSimpleName().toString();
+        boolean generateFactory = true;
+
+        if (config != null) {
+            if (!config.name().isBlank()) {
+                factoryName = config.name().trim();
+            }
+            generateFactory = config.generateFactory();
+        }
+
+        if (!isValidIdentifier(factoryName)) {
+            error(type, "El nombre de fábrica '" + factoryName + "' no es un identificador Java válido.");
+            return;
+        }
+
+        WidgetData data = new WidgetData(type, factoryName, generateFactory);
+        widgets.put(type.getQualifiedName().toString(), data);
+    }
+
+    private void generateWidgetClass() {
+        Filer filer = processingEnv.getFiler();
+        try {
+            JavaFileObject sourceFile = filer.createSourceFile(GENERATED_FQN);
+            TypeRenderer renderer = new TypeRenderer();
+            List<String> signatures = new ArrayList<>();
+            Set<String> usedSignatures = new LinkedHashSet<>();
+
+            try (PrintWriter out = new PrintWriter(sourceFile.openWriter())) {
+                out.println("package " + GENERATED_PACKAGE + ";");
+                out.println();
+                out.println("/**");
+                out.println(" * Pregenerated widget factory for JFlutter.");
+                out.println(" * Generated by " + getClass().getName() + ".");
+                out.println(" */");
+                out.println("public final class " + GENERATED_CLASS + " {");
+                out.println();
+                out.println("    private " + GENERATED_CLASS + "() {}");
+                out.println();
+
+                for (WidgetData widget : widgets.values()) {
+                    if (!widget.generateFactory) {
+                        continue;
+                    }
+
+                    List<ExecutableElement> constructors = publicConstructors(widget.type);
+                    if (constructors.isEmpty()) {
+                        warn(widget.type,
+                                "No se han generado fábricas para " + widget.qualifiedName() +
+                                        ": no tiene constructores públicos accesibles desde " + GENERATED_FQN + ".");
+                        continue;
+                    }
+
+                    for (ExecutableElement constructor : constructors) {
+                        FactoryData factory = new FactoryData(
+                                widget.factoryName,
+                                constructor.getParameters()
+                        );
+
+                        String signature = factory.signature(renderer);
+                        if (!usedSignatures.add(signature)) {
+                            error(widget.type,
+                                    "Colisión de fábrica en " + GENERATED_FQN + ": " + signature +
+                                            ". Usa @JFWidget(name=...) para diferenciar widgets.");
+                            continue;
+                        }
+
+                        signatures.add(signature);
+                        writeFactory(out, widget, constructor, renderer);
+                    }
+                }
+
+                out.println("}");
+            }
+
+            messager.printMessage(
+                    Diagnostic.Kind.NOTE,
+                    "Clase " + GENERATED_FQN + " generada con " + signatures.size() + " fábrica(s)."
+            );
+        } catch (IOException exception) {
+            messager.printMessage(
+                    Diagnostic.Kind.ERROR,
+                    "Fallo crítico generando " + GENERATED_FQN + ": " + exception.getMessage()
+            );
+        }
+    }
+
+    private void writeFactory(
+            PrintWriter out,
+            WidgetData widget,
+            ExecutableElement constructor,
+            TypeRenderer renderer
+    ) {
+        String returnType = renderer.render(widget.type.asType());
+        String typeParameters = renderTypeParameters(constructor, widget.type, renderer);
+
+        out.print("    public static ");
+        if (!typeParameters.isEmpty()) {
+            out.print(typeParameters);
+            out.print(' ');
+        }
+        out.print(returnType);
+        out.print(' ');
+        out.print(widget.factoryName);
+        out.print('(');
+
+        List<? extends VariableElement> parameters = constructor.getParameters();
+        for (int i = 0; i < parameters.size(); i++) {
+            if (i > 0) out.print(", ");
+            VariableElement parameter = parameters.get(i);
+            String parameterType = renderer.render(parameter.asType());
+            if (constructor.isVarArgs() && i == parameters.size() - 1 && parameter.getKind() == ElementKind.PARAMETER) {
+                TypeMirror type = parameter.asType();
+                if (type.getKind() == TypeKind.ARRAY) {
+                    parameterType = renderer.render(((ArrayType) type).getComponentType()) + "...";
+                }
+            }
+            out.print(parameterType);
+            out.print(' ');
+            out.print(parameter.getSimpleName());
+        }
+        out.println(") {");
+
+        out.print("        return new ");
+        out.print(returnType);
+        out.print('(');
+        for (int i = 0; i < parameters.size(); i++) {
+            if (i > 0) out.print(", ");
+            out.print(parameters.get(i).getSimpleName());
+        }
+        out.println(");");
+        out.println("    }");
+        out.println();
+    }
+
+    private List<ExecutableElement> publicConstructors(TypeElement type) {
+        List<ExecutableElement> constructors = new ArrayList<>();
+        for (Element enclosed : type.getEnclosedElements()) {
+            if (enclosed.getKind() != ElementKind.CONSTRUCTOR) {
+                continue;
+            }
+
+            ExecutableElement constructor = (ExecutableElement) enclosed;
+            if (constructor.getModifiers().contains(Modifier.PUBLIC)) {
+                constructors.add(constructor);
+            }
+        }
+        return constructors;
+    }
+
+    private String renderTypeParameters(ExecutableElement constructor, TypeElement widget, TypeRenderer renderer) {
+        LinkedHashMap<String, TypeMirror> parameters = new LinkedHashMap<>();
+
+        for (TypeParameterElement parameter : widget.getTypeParameters()) {
+            parameters.put(parameter.getSimpleName().toString(), parameter.asType());
+        }
+        for (TypeParameterElement parameter : constructor.getTypeParameters()) {
+            parameters.putIfAbsent(parameter.getSimpleName().toString(), parameter.asType());
+        }
+
+        if (parameters.isEmpty()) {
+            return "";
+        }
+
+        // Generic widgets/constructors require their type variables to be
+        // declared by the generated factory method.
+        StringBuilder out = new StringBuilder("<");
+        int index = 0;
+        for (TypeParameterElement parameter : widget.getTypeParameters()) {
+            if (index++ > 0) out.append(", ");
+            out.append(parameter.getSimpleName());
+            appendBounds(out, parameter, renderer);
+        }
+        for (TypeParameterElement parameter : constructor.getTypeParameters()) {
+            if (containsTypeParameter(widget, parameter.getSimpleName().toString())) continue;
+            if (index++ > 0) out.append(", ");
+            out.append(parameter.getSimpleName());
+            appendBounds(out, parameter, renderer);
+        }
+        return out.append('>').toString();
+    }
+
+    private void appendBounds(StringBuilder out, TypeParameterElement parameter, TypeRenderer renderer) {
+        List<? extends TypeMirror> bounds = parameter.getBounds();
+        if (bounds.size() == 1 && bounds.getFirst().getKind() == TypeKind.NULL) {
+            return;
+        }
+        for (TypeMirror bound : bounds) {
+            String rendered = renderer.render(bound);
+            if (rendered.contentEquals("java.lang.Object")) continue;
+            out.append(" extends ").append(rendered);
+            break;
+        }
+    }
+
+    private boolean containsTypeParameter(TypeElement type, String name) {
+        for (TypeParameterElement parameter : type.getTypeParameters()) {
+            if (parameter.getSimpleName().contentEquals(name)) return true;
+        }
+        return false;
+    }
+
+    private boolean isWidgetType(TypeMirror type) {
+        if (widgetType == null || type == null || type.getKind() == TypeKind.NONE) {
+            return false;
+        }
+        try {
+            return processingEnv.getTypeUtils().isSubtype(
+                    processingEnv.getTypeUtils().erasure(type),
+                    processingEnv.getTypeUtils().erasure(widgetType.asType())
+            );
+        } catch (IllegalArgumentException ignored) {
+            return false;
+        }
+    }
+
+    private boolean containsTypeVariable(TypeMirror type) {
+        return type.accept(new TypeKindVisitor9<Boolean, Void>(false) {
+            @Override
+            public Boolean visitTypeVariable(TypeVariable t, Void unused) {
+                return true;
+            }
+
+            @Override
+            public Boolean visitArray(ArrayType t, Void unused) {
+                return t.getComponentType().accept(this, null);
+            }
+
+            @Override
+            public Boolean visitDeclared(DeclaredType t, Void unused) {
+                for (TypeMirror argument : t.getTypeArguments()) {
+                    if (argument.accept(this, null)) return true;
+                }
+                return false;
+            }
+
+            @Override
+            public Boolean visitError(ErrorType t, Void unused) {
+                for (TypeMirror argument : t.getTypeArguments()) {
+                    if (argument.accept(this, null)) return true;
+                }
+                return false;
+            }
+        }, null);
+    }
+
+    private boolean isValidIdentifier(String value) {
+        return value != null && !value.isBlank() && SourceVersion.isName(value);
+    }
+
+    private void warn(Element element, String message) {
+        messager.printMessage(Diagnostic.Kind.WARNING, message, element);
+    }
+
+    private void error(Element element, String message) {
+        messager.printMessage(Diagnostic.Kind.ERROR, message, element);
+    }
+
+    private static final class TypeRenderer {
+        private final TypeVisitor<String, Void> visitor = new TypeKindVisitor9<String, Void>("java.lang.Object") {
+            @Override
+            public String visitPrimitive(PrimitiveType t, Void unused) {
+                return t.toString();
+            }
+
+            @Override
+            public String visitNoType(NoType t, Void unused) {
+                return t.getKind() == TypeKind.VOID ? "void" : t.toString();
+            }
+
+            @Override
+            public String visitArray(ArrayType t, Void unused) {
+                return t.getComponentType().accept(this, null) + "[]";
+            }
+
+            @Override
+            public String visitDeclared(DeclaredType t, Void unused) {
+                StringBuilder out = new StringBuilder();
+                TypeElement element = (TypeElement) t.asElement();
+                out.append(element.getQualifiedName());
+                List<? extends TypeMirror> arguments = t.getTypeArguments();
+                if (!arguments.isEmpty()) {
+                    out.append('<');
+                    for (int i = 0; i < arguments.size(); i++) {
+                        if (i > 0) out.append(", ");
+                        out.append(arguments.get(i).accept(this, null));
+                    }
+                    out.append('>');
+                }
+                return out.toString();
+            }
+
+            @Override
+            public String visitError(ErrorType t, Void unused) {
+                return visitDeclared(t, unused);
+            }
+
+            @Override
+            public String visitTypeVariable(TypeVariable t, Void unused) {
+                return t.asElement().getSimpleName().toString();
+            }
+
+            @Override
+            public String visitWildcard(javax.lang.model.type.WildcardType t, Void unused) {
+                TypeMirror extendsBound = t.getExtendsBound();
+                TypeMirror superBound = t.getSuperBound();
+                if (extendsBound != null) return "? extends " + extendsBound.accept(this, null);
+                if (superBound != null) return "? super " + superBound.accept(this, null);
+                return "?";
+            }
+
+            @Override
+            public String visitIntersection(javax.lang.model.type.IntersectionType t, Void unused) {
+                StringBuilder out = new StringBuilder();
+                List<? extends TypeMirror> bounds = t.getBounds();
+                for (int i = 0; i < bounds.size(); i++) {
+                    if (i > 0) out.append(" & ");
+                    out.append(bounds.get(i).accept(this, null));
+                }
+                return out.toString();
+            }
+        };
+
+        String render(TypeMirror type) {
+            return type.accept(visitor, null);
+        }
+    }
+}
