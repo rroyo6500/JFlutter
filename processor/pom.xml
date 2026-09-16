@@ -4,20 +4,37 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>rroyo.JF</groupId>
+        <groupId>rroyo.jf</groupId>
         <artifactId>jflutter</artifactId>
-        <version>2.0.0-snapshot</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>processor</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>rroyo.JF</groupId>
+            <groupId>rroyo.jf</groupId>
             <artifactId>annotations</artifactId>
             <version>${project.version}</version>
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!--
+                        The processor registers itself as a service resource.
+                        Do not try to load it while this module is compiling:
+                        its class has not been produced yet.
+                    -->
+                    <proc>none</proc>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

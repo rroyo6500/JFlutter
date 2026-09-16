@@ -4,19 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>rroyo.JF</groupId>
+    <groupId>rroyo.jf</groupId>
     <artifactId>jflutter</artifactId>
-    <version>2.0.0-snapshot</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
         <module>annotations</module>
         <module>processor</module>
         <module>core</module>
+        <module>jflutter-starter</module>
     </modules>
 
     <properties>
+        <revision>2.0.0-snapshot.1</revision>
         <maven.compiler.source>26</maven.compiler.source>
         <maven.compiler.target>26</maven.compiler.target>
+        <maven.compiler.proc>full</maven.compiler.proc>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

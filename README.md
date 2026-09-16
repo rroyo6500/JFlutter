@@ -41,7 +41,7 @@ The project enables annotation processing explicitly with:
 <proc>full</proc>
 ```
 
-and makes the processor a transitive dependency of `core` so it is available to applications importing JFlutter.
+and publishes the processor as a transitive dependency of `core`, so javac can discover it while compiling applications that import JFlutter.
 
 A consumer project using a recent JDK and Maven compiler configuration should explicitly enable annotation processing as well:
 

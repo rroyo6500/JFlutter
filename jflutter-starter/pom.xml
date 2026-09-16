@@ -9,9 +9,20 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>sandbox</artifactId>
+    <artifactId>jflutter-starter</artifactId>
+
+    <properties>
+        <maven.compiler.source>26</maven.compiler.source>
+        <maven.compiler.target>26</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>rroyo.jf</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>rroyo.jf</groupId>
             <artifactId>core</artifactId>
@@ -19,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>rroyo.jf</groupId>
-            <artifactId>annotations</artifactId>
+            <artifactId>processor</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
